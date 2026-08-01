@@ -77,8 +77,8 @@ export class SectionRenderer {
       doc.setFont(fontName, 'bold');
       doc.setFontSize(26);
       doc.setTextColor('#FFFFFF');
-      doc.text('GEMBA ASSESSMENT', 20, 50);
-      doc.text('REPORT', 20, 63);
+      doc.text('GEMBA QLA', 20, 50);
+      doc.text('QUICK LOSS ANALYZER REPORT', 20, 63);
 
       doc.setFont(fontName, 'normal');
       doc.setFontSize(11);
