@@ -1,5 +1,6 @@
-// Gemba Assessment Platform Relational Local Database
+// Gemba QLA Relational Hybrid Local & Supabase Cloud Database
 // Implements a normalized relational structure linked by CompanyID (Foreign Key)
+import { supabase, isSupabaseConfigured } from './lib/supabase';
 
 export interface Company {
   companyId: string; // UUID
@@ -336,6 +337,21 @@ export const GembaDB = {
         companies.push(company);
       }
       localStorage.setItem(KEYS.COMPANIES, JSON.stringify(companies));
+
+      if (isSupabaseConfigured && supabase) {
+        supabase.from('companies').upsert({
+          company_id: company.companyId,
+          company_name: company.companyName,
+          sector: company.sector,
+          location: company.location,
+          consultant: company.consultant,
+          visit_date: company.visitDate,
+          status: company.status,
+          updated_at: new Date().toISOString()
+        }).then(({ error }) => {
+          if (error) console.warn('[Supabase Sync] Error syncing company:', error);
+        });
+      }
     } catch (e) {
       console.error('Error saving company', e);
     }
