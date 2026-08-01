@@ -64,13 +64,11 @@ interface BrandLogoProps {
 function BrandLogo({ collapsed = false, className = "" }: BrandLogoProps) {
   return (
     <div className={`flex items-center gap-2 select-none bg-transparent ${className}`}>
-      <div className="shrink-0 p-1 bg-white/95 rounded-xl border border-slate-200/60 shadow-xs hover:scale-105 transition-all">
-        <img 
-          src={appLogo} 
-          style={{ height: "40px", width: "auto", objectFit: "contain", verticalAlign: "middle" }} 
-          alt="Gemba Digital Logo" 
-        />
-      </div>
+      <img 
+        src={appLogo} 
+        style={{ height: "40px", width: "auto", objectFit: "contain", verticalAlign: "middle" }} 
+        alt="Gemba Digital Logo" 
+      />
     </div>
   );
 }

@@ -55,7 +55,7 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
       <div className="w-full max-w-md bg-slate-900/90 border border-slate-800 rounded-3xl shadow-2xl p-6 sm:p-8 relative z-10 space-y-6 backdrop-blur-xl animate-fade-in">
         {/* Logo & Header */}
         <div className="flex flex-col items-center text-center space-y-4">
-          <div className="p-3 bg-white/95 rounded-2xl shadow-md border border-slate-200/50 hover:scale-105 transition-transform duration-300">
+          <div>
             <img 
               src={appLogo} 
               alt="Gemba Digital Logo" 
