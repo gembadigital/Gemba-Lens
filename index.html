@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>Gemba Digital | Saha Analiz ve Bütçe Yönetimi</title>
+    
+    <!-- Global Error Catcher & Visual Reporter -->
+    <script>
+      (function() {
+        function showErrorOverlay(type, message, location, stack) {
+          if (!document.body) {
+            window.addEventListener('DOMContentLoaded', function() {
+              showErrorOverlay(type, message, location, stack);
+            });
+            return;
+          }
+          var overlay = document.getElementById('error-reporter-overlay');
+          if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'error-reporter-overlay';
+            overlay.style.position = 'fixed';
+            overlay.style.top = '0';
+            overlay.style.left = '0';
+            overlay.style.width = '100%';
+            overlay.style.height = '100%';
+            overlay.style.backgroundColor = 'rgba(15, 23, 42, 0.98)';
+            overlay.style.color = '#f8fafc';
+            overlay.style.zIndex = '999999';
+            overlay.style.padding = '24px';
+            overlay.style.fontFamily = 'monospace';
+            overlay.style.overflowY = 'auto';
+            overlay.style.boxSizing = 'border-box';
+            
+            var container = document.createElement('div');
+            container.style.maxWidth = '800px';
+            container.style.margin = '40px auto';
+            container.style.background = '#1e293b';
+            container.style.borderRadius = '8px';
+            container.style.border = '1px solid #ef4444';
+            container.style.padding = '24px';
+            container.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.5)';
+            
+            var header = document.createElement('h2');
+            header.innerText = '🚨 Sistem Hatası / System Error';
+            header.style.color = '#ef4444';
+            header.style.marginTop = '0';
+            header.style.fontSize = '20px';
+            header.style.borderBottom = '1px solid #334155';
+            header.style.paddingBottom = '12px';
+            
+            var desc = document.createElement('p');
+            desc.innerText = 'Uygulama yüklenirken veya çalışırken bir hata oluştu. Lütfen bu hatayı kopyalayıp asistana bildirin:';
+            desc.style.color = '#94a3b8';
+            desc.style.fontSize = '14px';
+            
+            var errorInfo = document.createElement('div');
+            errorInfo.id = 'error-reporter-details';
+            errorInfo.style.background = '#0f172a';
+            errorInfo.style.padding = '16px';
+            errorInfo.style.borderRadius = '6px';
+            errorInfo.style.border = '1px solid #334155';
+            errorInfo.style.marginTop = '16px';
+            
+            var reloadBtn = document.createElement('button');
+            reloadBtn.innerText = 'Yeniden Yükle (Reload Page)';
+            reloadBtn.style.background = '#ef4444';
+            reloadBtn.style.color = 'white';
+            reloadBtn.style.border = 'none';
+            reloadBtn.style.padding = '10px 20px';
+            reloadBtn.style.borderRadius = '4px';
+            reloadBtn.style.cursor = 'pointer';
+            reloadBtn.style.marginTop = '20px';
+            reloadBtn.style.fontWeight = 'bold';
+            reloadBtn.onclick = function() { window.location.reload(); };
+
+            var clearCacheBtn = document.createElement('button');
+            clearCacheBtn.innerText = 'Önbelleği Temizle ve Yeniden Yükle';
+            clearCacheBtn.style.background = '#475569';
+            clearCacheBtn.style.color = 'white';
+            clearCacheBtn.style.border = 'none';
+            clearCacheBtn.style.padding = '10px 20px';
+            clearCacheBtn.style.borderRadius = '4px';
+            clearCacheBtn.style.cursor = 'pointer';
+            clearCacheBtn.style.marginTop = '20px';
+            clearCacheBtn.style.marginLeft = '10px';
+            clearCacheBtn.onclick = function() { 
+              try { window.localStorage.clear(); } catch(e){}
+              try { window.sessionStorage.clear(); } catch(e){}
+              window.location.reload(); 
+            };
+            
+            container.appendChild(header);
+            container.appendChild(desc);
+            container.appendChild(errorInfo);
+            container.appendChild(reloadBtn);
+            container.appendChild(clearCacheBtn);
+            overlay.appendChild(container);
+            document.body.appendChild(overlay);
+          }
+          
+          var detailsHtml = '<strong>Hata Tipi (Type):</strong> <span style="color: #f43f5e">' + type + '</span><br>';
+          detailsHtml += '<strong>Mesaj (Message):</strong> <span style="color: #fb923c">' + message + '</span><br>';
+          if (location) {
+            detailsHtml += '<strong>Konum (Location):</strong> <span style="color: #38bdf8">' + location + '</span><br>';
+          }
+          if (stack) {
+            detailsHtml += '<br><strong>Yığın İzleme (Stack Trace):</strong><br><pre style="color: #cbd5e1; background: #020617; padding: 12px; border-radius: 4px; overflow-x: auto; white-space: pre-wrap; font-size: 12px; margin-top: 8px; border: 1px solid #1e293b">' + stack + '</pre>';
+          }
+          
+          document.getElementById('error-reporter-details').innerHTML = detailsHtml;
+        }
+
+        window.addEventListener('error', function(event) {
+          var msg = event.message || '';
+          var url = event.filename || '';
+          if (msg.indexOf('WebSocket') !== -1 || msg.indexOf('websocket') !== -1 || url.indexOf('vite') !== -1) {
+            return; // Ignore benign development-only WebSocket/Vite errors
+          }
+          showErrorOverlay('Unhandled Runtime Error', event.message, event.filename + ':' + event.lineno + ':' + event.colno, event.error ? event.error.stack : null);
+        });
+        window.addEventListener('unhandledrejection', function(event) {
+          var message = 'Unknown rejection';
+          var stack = null;
+          if (event.reason) {
+            message = event.reason.message || String(event.reason);
+            stack = event.reason.stack || null;
+          }
+          if (
+            (message && (message.indexOf('WebSocket') !== -1 || message.indexOf('websocket') !== -1 || message.indexOf('vite') !== -1)) ||
+            (stack && (stack.indexOf('WebSocket') !== -1 || stack.indexOf('websocket') !== -1 || stack.indexOf('vite') !== -1 || stack.indexOf('@vite/client') !== -1))
+          ) {
+            return; // Ignore benign development-only WebSocket/Vite rejections
+          }
+          showErrorOverlay('Unhandled Promise Rejection', message, null, stack);
+        });
+      })();
+    </script>
+    
+    <!-- PWA Standard & iOS / iPad Support -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#020617" />
+    
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Gemba Digital" />
+    <link rel="apple-touch-icon" href="/src/assets/images/app_logo_pwa_1781451252393.jpg" />
+    
+    <!-- Custom styling to prevent iOS Safari address bar shifts if installed as standalone web app -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="application-name" content="Gemba Digital" />
+    
+    <!-- Service Worker Registration & Stale Cache Eviction -->
+    <script>
+      // Clear obsolete old PWA caches on load to resolve white-screen issues
+      try {
+        if ('caches' in window) {
+          caches.keys().then(function(keys) {
+            var clearedAny = false;
+            var deletePromises = keys.map(function(key) {
+              if (key === 'gemba-partner-pwa-v1') {
+                clearedAny = true;
+                return caches.delete(key);
+              }
+              return Promise.resolve();
+            });
+            Promise.all(deletePromises).then(function() {
+              if (clearedAny) {
+                console.log('Cleared obsolete stale cache. Reloading page...');
+                window.location.reload();
+              }
+            });
+          });
+        }
+      } catch (e) {
+        console.error('Failed to clean obsolete caches:', e);
+      }
+
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(reg => {
+              console.log('Gemba Digital PWA registered:', reg.scope);
+              // Force checking for updates to active service worker
+              reg.update();
+            })
+            .catch(err => console.error('Gemba Digital PWA registration failed:', err));
+        });
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+

@@ -1,0 +1,6 @@
+{
+  "name": "Gemba Partner Saha Tespit",
+  "description": "Saha ön inceleme gözlem kriterlerine göre teklif opsiyonlarını ve bütçeyi otomatik olarak hesaplayan modern, akıllı saha tespit ve teklif hazırlama uygulaması.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

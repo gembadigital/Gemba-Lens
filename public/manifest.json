@@ -1,0 +1,25 @@
+{
+  "name": "Gemba Partner",
+  "short_name": "Gemba Partner",
+  "description": "Saha ön inceleme gözlem kriterlerine göre teklif opsiyonlarını ve bütçeyi otomatik olarak hesaplayan modern, akıllı saha tespit ve teklif hazırlama uygulaması.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#020617",
+  "orientation": "any",
+  "categories": ["business", "productivity"],
+  "icons": [
+    {
+      "src": "/src/assets/images/app_logo_pwa_1781451252393.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/src/assets/images/app_logo_pwa_1781451252393.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}
