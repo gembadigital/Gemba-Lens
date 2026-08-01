@@ -63,6 +63,13 @@ export interface OperationData {
   costPropOverhead: string;
   costPropProfit: string;
 
+  // Additional company metadata
+  urunGrubu?: string;
+  calisanSayisi?: string;
+  vardiya?: string;
+  gorusulen?: string;
+  talepEdilenHizmet?: string;
+
   // Scores Record
   scores: Record<number, number>;
   // Chat messages
@@ -437,6 +444,11 @@ export const GembaDB = {
       costPropMaintenance: '10',
       costPropOverhead: '10',
       costPropProfit: '10',
+      urunGrubu: sector || 'Genel İmalat',
+      calisanSayisi: '150',
+      vardiya: '3 Vardiya (24 Saat)',
+      gorusulen: '',
+      talepEdilenHizmet: 'Yalın Dönüşüm Proje Danışmanlığı',
       scores: defaultScores,
       chatMessages: [
         {
@@ -518,8 +530,13 @@ export const GembaDB = {
         costPropMaintenance: operationFields.costPropMaintenance ?? '10',
         costPropOverhead: operationFields.costPropOverhead ?? '10',
         costPropProfit: operationFields.costPropProfit ?? '10',
-        scores: operationFields.scores ?? {},
-        chatMessages: operationFields.chatMessages ?? []
+        urunGrubu: operationFields.urunGrubu ?? (oIdx > -1 ? operations[oIdx].urunGrubu : ''),
+        calisanSayisi: operationFields.calisanSayisi ?? (oIdx > -1 ? operations[oIdx].calisanSayisi : ''),
+        vardiya: operationFields.vardiya ?? (oIdx > -1 ? operations[oIdx].vardiya : ''),
+        gorusulen: operationFields.gorusulen ?? (oIdx > -1 ? operations[oIdx].gorusulen : ''),
+        talepEdilenHizmet: operationFields.talepEdilenHizmet ?? (oIdx > -1 ? operations[oIdx].talepEdilenHizmet : 'Yalın Dönüşüm Proje Danışmanlığı'),
+        scores: operationFields.scores ?? (oIdx > -1 ? operations[oIdx].scores : {}),
+        chatMessages: operationFields.chatMessages ?? (oIdx > -1 ? operations[oIdx].chatMessages : [])
       };
 
       if (oIdx > -1) {

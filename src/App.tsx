@@ -38,7 +38,9 @@ import {
   Maximize2,
   X,
   FileDown,
-  Settings
+  Settings,
+  LogOut,
+  UserCheck
 } from 'lucide-react';
 
 import { RoiAnalyzer } from './components/RoiAnalyzer';
@@ -49,8 +51,9 @@ const localStorage = safeStorage;
 import Dashboard from './components/Dashboard';
 import SahaBulgulariPanel from './components/SahaBulgulariPanel';
 import { ExportService } from './services/pdf';
+import LoginPage from './components/LoginPage';
 
-const appLogo = "/src/assets/images/gemba_digital_logo.png";
+const appLogo = "/gemba_digital_logo.png";
 
 // ─── BRAND LOGO COMPONENT ──────────────────────────────────────────────────
 interface BrandLogoProps {
@@ -59,43 +62,13 @@ interface BrandLogoProps {
 }
 
 function BrandLogo({ collapsed = false, className = "" }: BrandLogoProps) {
-  if (collapsed) {
-    // Collapsed/Compact mode: Shows only the symbol (left part of the transparent PNG)
-    return (
-      <div 
-        className={`w-[45px] h-[45px] overflow-hidden relative shrink-0 select-none bg-transparent rounded-xl border border-slate-200/40 p-1 hover:bg-slate-50 transition-all ${className}`} 
-        title="Gemba Digital"
-      >
-        <img 
-          src={appLogo} 
-          className="absolute left-0 top-0 h-full max-w-none transition-all duration-300" 
-          style={{ objectFit: 'cover', objectPosition: 'left', width: 'auto' }} 
-          alt="Gemba Digital Symbol" 
-        />
-      </div>
-    );
-  }
-
-  // Expanded mode: Shows the full logo with space
   return (
-    <div className={`flex items-center gap-3 select-none bg-transparent ${className}`}>
-      {/* On mobile screens (<md), show only the symbol; on larger screens, show the full logo */}
-      <div className="block md:hidden shrink-0">
-        <div className="w-[45px] h-[45px] overflow-hidden relative rounded-xl border border-slate-200/40 p-1" title="Gemba Digital">
-          <img 
-            src={appLogo} 
-            className="absolute left-0 top-0 h-full max-w-none" 
-            style={{ objectFit: 'cover', objectPosition: 'left', width: 'auto' }} 
-            alt="Gemba Digital Symbol" 
-          />
-        </div>
-      </div>
-      <div className="hidden md:block shrink-0 px-2 py-1 bg-white/50 hover:bg-white rounded-xl transition-all">
+    <div className={`flex items-center gap-2 select-none bg-transparent ${className}`}>
+      <div className="shrink-0 p-1 bg-white/95 rounded-xl border border-slate-200/60 shadow-xs hover:scale-105 transition-all">
         <img 
           src={appLogo} 
-          style={{ height: "45px", width: "auto", objectFit: "contain", verticalAlign: "middle" }} 
+          style={{ height: "40px", width: "auto", objectFit: "contain", verticalAlign: "middle" }} 
           alt="Gemba Digital Logo" 
-          className="transition-all duration-300 hover:scale-[1.02]"
         />
       </div>
     </div>
@@ -377,47 +350,60 @@ export default function App() {
     setFirmaAdi(details.company.companyName);
     setSektor(details.company.sector);
     setAdres(details.company.location || '');
-    setUrunGrubu(details.company.sector); 
     setConsultant(details.company.consultant || 'Saha Danışmanı');
     setTarih(details.company.visitDate);
     
     if (details.operation) {
-      setSetupMachineCount(details.operation.setupMachineCount);
-      setAnnualVolume(details.operation.annualVolume);
-      setProductionUnit(details.operation.productionUnit);
-      setTurnoverLira(details.operation.turnoverLira);
-      setPlannedEfficiency(details.operation.plannedEfficiency);
-      setActualEfficiency(details.operation.actualEfficiency);
-      setCopqRate(details.operation.copqRate);
-      setScrapRate(details.operation.scrapRate);
-      setReworkRate(details.operation.reworkRate);
-      setOvertimeRate(details.operation.overtimeRate);
-      setLeadTime(details.operation.leadTime);
-      setOee(details.operation.oee);
-      setCoveredArea(details.operation.coveredArea);
-      setOperatorsCount(details.operation.operatorsCount);
-      setSetupFrequency(details.operation.setupFrequency);
-      setSetupDuration(details.operation.setupDuration);
-      setAffectedOpsSetup(details.operation.affectedOpsSetup);
-      setGrossLaborCost(details.operation.grossLaborCost);
+      setUrunGrubu(details.operation.urunGrubu || details.company.sector);
+      setCalisanSayisi(details.operation.calisanSayisi || '150');
+      setVardiya(details.operation.vardiya || '3 Vardiya (24 Saat)');
+      setGorusulen(details.operation.gorusulen || '');
+      setTalepEdilenHizmet(details.operation.talepEdilenHizmet || 'Yalın Dönüşüm Proje Danışmanlığı');
+      
+      setSetupMachineCount(details.operation.setupMachineCount || '5');
+      setAnnualVolume(details.operation.annualVolume || '500.000');
+      setProductionUnit(details.operation.productionUnit || 'Adet');
+      setTurnoverLira(details.operation.turnoverLira || '150.000.000');
+      setPlannedEfficiency(details.operation.plannedEfficiency || '85');
+      setActualEfficiency(details.operation.actualEfficiency || '62');
+      setCopqRate(details.operation.copqRate || '4.5');
+      setScrapRate(details.operation.scrapRate || '1.8');
+      setReworkRate(details.operation.reworkRate || '2.7');
+      setOvertimeRate(details.operation.overtimeRate || '8.5');
+      setLeadTime(details.operation.leadTime || '12');
+      setOee(details.operation.oee || '58');
+      setCoveredArea(details.operation.coveredArea || '4.500');
+      setOperatorsCount(details.operation.operatorsCount || '120');
+      setSetupFrequency(details.operation.setupFrequency || '5');
+      setSetupDuration(details.operation.setupDuration || '45');
+      setAffectedOpsSetup(details.operation.affectedOpsSetup || '3');
+      setGrossLaborCost(details.operation.grossLaborCost || '48.000');
 
-      setWizardGrossSalary(details.operation.wizardGrossSalary);
-      setWizardSgkRate(details.operation.wizardSgkRate);
-      setWizardYemek(details.operation.wizardYemek);
-      setWizardServis(details.operation.wizardServis);
-      setWizardSeveranceRate(details.operation.wizardSeveranceRate);
-      setWizardLeaveRate(details.operation.wizardLeaveRate);
-      setWizardSideBenefits(details.operation.wizardSideBenefits);
+      setWizardGrossSalary(details.operation.wizardGrossSalary || '30.000');
+      setWizardSgkRate(details.operation.wizardSgkRate ?? 17.5);
+      setWizardYemek(details.operation.wizardYemek || '4.500');
+      setWizardServis(details.operation.wizardServis || '3.500');
+      setWizardSeveranceRate(details.operation.wizardSeveranceRate ?? 8.33);
+      setWizardLeaveRate(details.operation.wizardLeaveRate ?? 5.0);
+      setWizardSideBenefits(details.operation.wizardSideBenefits || '2.000');
 
-      setCostPropMaterial(details.operation.costPropMaterial);
-      setCostPropLabor(details.operation.costPropLabor);
-      setCostPropEnergy(details.operation.costPropEnergy);
-      setCostPropMaintenance(details.operation.costPropMaintenance);
-      setCostPropOverhead(details.operation.costPropOverhead);
-      setCostPropProfit(details.operation.costPropProfit);
+      setCostPropMaterial(details.operation.costPropMaterial || '50');
+      setCostPropLabor(details.operation.costPropLabor || '20');
+      setCostPropEnergy(details.operation.costPropEnergy || '10');
+      setCostPropMaintenance(details.operation.costPropMaintenance || '10');
+      setCostPropOverhead(details.operation.costPropOverhead || '10');
+      setCostPropProfit(details.operation.costPropProfit || '10');
 
       setScores(details.operation.scores || {});
       setChatMessages(details.operation.chatMessages || []);
+    } else {
+      setUrunGrubu(details.company.sector);
+      setCalisanSayisi('');
+      setVardiya('');
+      setGorusulen('');
+      setTalepEdilenHizmet('Yalın Dönüşüm Proje Danışmanlığı');
+      setScores({});
+      setChatMessages([]);
     }
     
     if (details.assessment) {
@@ -441,6 +427,13 @@ export default function App() {
   const [setupMachineCount, setSetupMachineCount] = useState(() => localStorage.getItem('gp_setupMachineCount') || '5');
   const [annualVolume, setAnnualVolume] = useState(() => localStorage.getItem('gp_annualVolume') || '500.000');
   const [productionUnit, setProductionUnit] = useState(() => localStorage.getItem('gp_productionUnit') || 'Adet');
+  const [authUser, setAuthUser] = useState<string | null>(() => localStorage.getItem('gp_auth_user'));
+
+  const handleLogout = () => {
+    localStorage.removeItem('gp_auth_user');
+    setAuthUser(null);
+  };
+
   const [turnoverLira, setTurnoverLira] = useState(() => localStorage.getItem('gp_turnoverLira') || '150.000.000');
   const [plannedEfficiency, setPlannedEfficiency] = useState(() => localStorage.getItem('gp_plannedEfficiency') || '85');
   const [actualEfficiency, setActualEfficiency] = useState(() => localStorage.getItem('gp_actualEfficiency') || '62');
@@ -577,6 +570,14 @@ Eğer belirtilen sektöre özel yeterli ve doğrulanabilir bilgiye sahip değils
     };
   }, []);
 
+  const [isPwaModalOpen, setIsPwaModalOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3500);
+  };
+
   const triggerPwaInstall = () => {
     if (deferredPrompt) {
       deferredPrompt.prompt();
@@ -587,14 +588,7 @@ Eğer belirtilen sektöre özel yeterli ve doğrulanabilir bilgiye sahip değils
         setDeferredPrompt(null);
       });
     } else {
-      // Elegant, descriptive guide for iPad/Macbook Safari where beforeinstallprompt isn't supported natively
-      alert(
-        'iPad veya MacBook Üzerinde Tam Ekran Masaüstü Sürümünü Kurmak İçin:\n\n' +
-        '1. Safari tarayıcınızın üst panelindeki veya araç çubuğundaki "Paylaş" (Share) düğmesine tıklayın.\n' +
-        '2. Çıkan menüden "Ana Ekrana Ekle" (Add to Home Screen) veya "Dock\'a Ekle" (Add to Dock) seçeneğini seçin.\n' +
-        '3. Ekran adını girerek onaylayın.\n\n' +
-        'Artık Gemba Digital uygulamasını tıpkı yerel bir masaüstü / iPadOS uygulaması gibi, tarayıcı barları olmadan, tam ekran ve kesintisiz (çevrimdışı destekli) deneyimleyebilirsiniz.'
-      );
+      setIsPwaModalOpen(true);
     }
   };
 
@@ -605,69 +599,72 @@ Eğer belirtilen sektöre özel yeterli ve doğrulanabilir bilgiye sahip değils
 
   // Persistence side effects
   useEffect(() => {
-    localStorage.setItem('gp_firmaAdi', firmaAdi);
-    localStorage.setItem('gp_sektor', sektor);
-    localStorage.setItem('gp_adres', adres);
-    localStorage.setItem('gp_urunGrubu', urunGrubu);
-    localStorage.setItem('gp_calisanSayisi', calisanSayisi);
-    localStorage.setItem('gp_vardiya', vardiya);
-    localStorage.setItem('gp_gorusulen', gorusulen);
-    localStorage.setItem('gp_tarih', tarih);
-    localStorage.setItem('gp_talepEdilenHizmet', talepEdilenHizmet);
-    localStorage.setItem('gp_notlar', notlar);
-    localStorage.setItem('gp_consultant', consultant);
+    // Save to relational database per company ID
+    if (currentCompanyId) {
+      GembaDB.saveFullState(
+        currentCompanyId,
+        {
+          companyName: firmaAdi,
+          sector: sektor,
+          location: adres,
+          consultant: consultant,
+          visitDate: tarih
+        },
+        {
+          urunGrubu,
+          calisanSayisi,
+          vardiya,
+          gorusulen,
+          talepEdilenHizmet,
+          setupMachineCount,
+          annualVolume,
+          productionUnit,
+          turnoverLira,
+          plannedEfficiency,
+          actualEfficiency,
+          copqRate,
+          scrapRate,
+          reworkRate,
+          overtimeRate,
+          leadTime,
+          oee,
+          coveredArea,
+          operatorsCount,
+          setupFrequency,
+          setupDuration,
+          affectedOpsSetup,
+          grossLaborCost,
+          wizardGrossSalary,
+          wizardSgkRate,
+          wizardYemek,
+          wizardServis,
+          wizardSeveranceRate,
+          wizardLeaveRate,
+          wizardSideBenefits,
+          costPropMaterial,
+          costPropLabor,
+          costPropEnergy,
+          costPropMaintenance,
+          costPropOverhead,
+          costPropProfit,
+          scores,
+          chatMessages
+        },
+        {
+          notes: notlar
+        }
+      );
+    }
 
     localStorage.setItem('gp_activeTab', activeTab);
     localStorage.setItem('gp_currency', currency);
-    localStorage.setItem('gp_setupMachineCount', setupMachineCount);
-    localStorage.setItem('gp_annualVolume', annualVolume);
-    localStorage.setItem('gp_productionUnit', productionUnit);
-    localStorage.setItem('gp_turnoverLira', turnoverLira);
-    localStorage.setItem('gp_plannedEfficiency', plannedEfficiency);
-    localStorage.setItem('gp_actualEfficiency', actualEfficiency);
-    localStorage.setItem('gp_copqRate', copqRate);
-    localStorage.setItem('gp_scrapRate', scrapRate);
-    localStorage.setItem('gp_reworkRate', reworkRate);
-    localStorage.setItem('gp_overtimeRate', overtimeRate);
-    localStorage.setItem('gp_leadTime', leadTime);
-    localStorage.setItem('gp_oee', oee);
-    localStorage.setItem('gp_coveredArea', coveredArea);
-    localStorage.setItem('gp_operatorsCount', operatorsCount);
-    localStorage.setItem('gp_setupFrequency', setupFrequency);
-    localStorage.setItem('gp_setupDuration', setupDuration);
-    localStorage.setItem('gp_affectedOpsSetup', affectedOpsSetup);
-    localStorage.setItem('gp_grossLaborCost', grossLaborCost);
-
-    // Save wizard states
-    localStorage.setItem('gp_wiz_gross', wizardGrossSalary);
-    localStorage.setItem('gp_wiz_sgk_rate', wizardSgkRate.toString());
-    localStorage.setItem('gp_wiz_yemek', wizardYemek);
-    localStorage.setItem('gp_wiz_servis', wizardServis);
-    localStorage.setItem('gp_wiz_severance_rate', wizardSeveranceRate.toString());
-    localStorage.setItem('gp_wiz_leave_rate', wizardLeaveRate.toString());
-    localStorage.setItem('gp_wiz_side_benefits', wizardSideBenefits);
-
-    // Save cost proportions
-    localStorage.setItem('gp_costPropMaterial', costPropMaterial);
-    localStorage.setItem('gp_costPropLabor', costPropLabor);
-    localStorage.setItem('gp_costPropEnergy', costPropEnergy);
-    localStorage.setItem('gp_costPropMaintenance', costPropMaintenance);
-    localStorage.setItem('gp_costPropOverhead', costPropOverhead);
-    localStorage.setItem('gp_costPropProfit', costPropProfit);
-
-    // Save product family states
-    localStorage.setItem('gp_urunGrubuEnCok', urunGrubuEnCok);
-    localStorage.setItem('gp_urunGrubuAdet', urunGrubuAdet);
-    localStorage.setItem('gp_urunGrubuOran', urunGrubuOran);
-    localStorage.setItem('gp_useProductFamilyCost', useProductFamilyCost ? 'true' : 'false');
-    localStorage.setItem('gp_useProductFamilyRecovery', useProductFamilyRecovery ? 'true' : 'false');
   }, [
-    firmaAdi, sektor, adres, urunGrubu, calisanSayisi, vardiya, gorusulen, tarih, talepEdilenHizmet, notlar, consultant,
+    currentCompanyId, firmaAdi, sektor, adres, urunGrubu, calisanSayisi, vardiya, gorusulen, tarih, talepEdilenHizmet, notlar, consultant,
     activeTab, currency, setupMachineCount, annualVolume, productionUnit, turnoverLira, plannedEfficiency, actualEfficiency, copqRate, scrapRate, reworkRate, overtimeRate, leadTime, oee,
     coveredArea, operatorsCount, setupFrequency, setupDuration, affectedOpsSetup, grossLaborCost,
     wizardGrossSalary, wizardSgkRate, wizardYemek, wizardServis, wizardSeveranceRate, wizardLeaveRate, wizardSideBenefits,
     costPropMaterial, costPropLabor, costPropEnergy, costPropMaintenance, costPropOverhead, costPropProfit,
-    urunGrubuEnCok, urunGrubuAdet, urunGrubuOran, useProductFamilyCost, useProductFamilyRecovery
+    scores, chatMessages
   ]);
 
   // Dynamically reset wizard values on currency change to provide realistic local numbers
@@ -1051,20 +1048,21 @@ Eğer belirtilen sektöre özel yeterli ve doğrulanabilir bilgiye sahip değils
   // Total COPQ is aligned with the expected annual loss pool for perfect consistency across tabs.
   const totalCopqPool = totalLossExpected;
 
-  // Loss weights based on factory inputs to dynamically distribute the total pool
-  const w1 = Math.max(15, 35 - (oeeNum > 0 ? oeeNum * 0.3 : 20)); // Duruşlar & Model Değişimi
-  const w2 = Math.max(10, Math.min(30, reworkRateNum * 2.5));    // Kalite (Yeniden İşleme & Tamir Oranına göre)
-  const w3 = Math.max(5, Math.min(30, overtimeRateNum * 1.5));   // Fazla Mesai (Fazla Mesai Oranına göre)
-  const w4 = Math.max(10, Math.min(25, scrapRateNum * 3.5));     // Hurda & Fire (Toplam Hurda Oranına göre)
-  const w5 = Math.max(10, Math.min(25, (plannedEffNum - actualEffNum) * 1.2)); // İşçilik Verimsizliği
-  const w6 = Math.max(15, 40 - (oeeNum > 0 ? oeeNum * 0.35 : 20)); // Kapasite Kullanım Kayıpları
+  // Loss weights based strictly on real factory inputs (0 if input metric is 0)
+  const isSetupActive = setupFrequencyNum > 0 && setupDurationNum > 0 && setupMachineCountNum > 0;
+  const w1 = isSetupActive ? Math.max(5, (setupDurationNum / 30) * setupFrequencyNum * 5) : 0; // Duruşlar & Model Değişimi
+  const w2 = reworkRateNum > 0 ? reworkRateNum * 4 : 0;     // Kalite (Yeniden İşleme)
+  const w3 = overtimeRateNum > 0 ? overtimeRateNum * 2 : 0;   // Fazla Mesai
+  const w4 = scrapRateNum > 0 ? scrapRateNum * 5 : 0;       // Hurda & Fire
+  const w5 = (plannedEffNum > actualEffNum) ? (plannedEffNum - actualEffNum) * 1.5 : 0; // İşçilik Verimsizliği
+  const w6 = (oeeNum > 0 && oeeNum < 85) ? (85 - oeeNum) * 1.2 : 0; // Kapasite Kullanım Kayıpları
 
-  const sum_w = w1 + w2 + w3 + w4 + w5 + w6;
-  const loss_durus = Math.round(totalCopqPool * (w1 / sum_w));
-  const loss_kalite = Math.round(totalCopqPool * (w2 / sum_w));
-  const loss_mesai = Math.round(totalCopqPool * (w3 / sum_w));
-  const loss_hurda = Math.round(totalCopqPool * (w4 / sum_w));
-  const loss_iscilik = Math.round(totalCopqPool * (w5 / sum_w));
+  const sum_w = (w1 + w2 + w3 + w4 + w5 + w6) || 1;
+  const loss_durus = w1 > 0 ? Math.round(totalCopqPool * (w1 / sum_w)) : 0;
+  const loss_kalite = w2 > 0 ? Math.round(totalCopqPool * (w2 / sum_w)) : 0;
+  const loss_mesai = w3 > 0 ? Math.round(totalCopqPool * (w3 / sum_w)) : 0;
+  const loss_hurda = w4 > 0 ? Math.round(totalCopqPool * (w4 / sum_w)) : 0;
+  const loss_iscilik = w5 > 0 ? Math.round(totalCopqPool * (w5 / sum_w)) : 0;
   const loss_kapasite = totalCopqPool - (loss_durus + loss_kalite + loss_mesai + loss_hurda + loss_iscilik);
 
   // Helper to adjust benchmark ranges dynamically based on Diagnostic Score
@@ -1120,44 +1118,44 @@ Eğer belirtilen sektöre özel yeterli ve doğrulanabilir bilgiye sahip değils
   const oppWipR = getAdjustedRatios(10, 40);
   const oppSpR = getAdjustedRatios(10, 30);
 
-  // 1) RAW DOĞRUDAN MALİYET AZALTMA (Sane, bounded values based on specific loss category pools)
-  const raw_sc_min = loss_kalite * (oppScR.minPct / 100); 
-  const raw_sc_max = loss_kalite * (oppScR.maxPct / 100); 
+  // 1) RAW DOĞRUDAN MALİYET AZALTMA (Sane, bounded values based strictly on non-zero loss category pools)
+  const raw_sc_min = loss_kalite > 0 ? loss_kalite * (oppScR.minPct / 100) : 0; 
+  const raw_sc_max = loss_kalite > 0 ? loss_kalite * (oppScR.maxPct / 100) : 0; 
 
-  const raw_fm_min = loss_hurda * (oppFmR.minPct / 100); 
-  const raw_fm_max = loss_hurda * (oppFmR.maxPct / 100);
+  const raw_fm_min = loss_hurda > 0 ? loss_hurda * (oppFmR.minPct / 100) : 0; 
+  const raw_fm_max = loss_hurda > 0 ? loss_hurda * (oppFmR.maxPct / 100) : 0;
 
-  const raw_mes_min = loss_mesai * (oppMesR.minPct / 100); 
-  const raw_mes_max = loss_mesai * (oppMesR.maxPct / 100);
+  const raw_mes_min = loss_mesai > 0 ? loss_mesai * (oppMesR.minPct / 100) : 0; 
+  const raw_mes_max = loss_mesai > 0 ? loss_mesai * (oppMesR.maxPct / 100) : 0;
 
-  const raw_yi_min = loss_kalite * (oppYiR.minPct / 100);
-  const raw_yi_max = loss_kalite * (oppYiR.maxPct / 100);
+  const raw_yi_min = loss_kalite > 0 ? loss_kalite * (oppYiR.minPct / 100) : 0;
+  const raw_yi_max = loss_kalite > 0 ? loss_kalite * (oppYiR.maxPct / 100) : 0;
 
-  const raw_ov_min = loss_iscilik * (oppOvR.minPct / 100);
-  const raw_ov_max = loss_iscilik * (oppOvR.maxPct / 100);
+  const raw_ov_min = loss_iscilik > 0 ? loss_iscilik * (oppOvR.minPct / 100) : 0;
+  const raw_ov_max = loss_iscilik > 0 ? loss_iscilik * (oppOvR.maxPct / 100) : 0;
 
-  // 2) RAW KAPASİTE YARATMA
-  const raw_setup_min = loss_durus * (oppSetupR.minPct / 100);
-  const raw_setup_max = loss_durus * (oppSetupR.maxPct / 100);
+  // 2) RAW KAPASİTE YARATMA (SMED is 0 if setup loss is 0)
+  const raw_setup_min = loss_durus > 0 ? loss_durus * (oppSetupR.minPct / 100) : 0;
+  const raw_setup_max = loss_durus > 0 ? loss_durus * (oppSetupR.maxPct / 100) : 0;
 
-  const raw_pd_min = loss_kapasite * (oppPdR.minPct / 100);
-  const raw_pd_max = loss_kapasite * (oppPdR.maxPct / 100);
+  const raw_pd_min = loss_kapasite > 0 ? loss_kapasite * (oppPdR.minPct / 100) : 0;
+  const raw_pd_max = loss_kapasite > 0 ? loss_kapasite * (oppPdR.maxPct / 100) : 0;
 
-  const raw_oee_min = loss_kapasite * (oppOeeR.minPct / 100);
-  const raw_oee_max = loss_kapasite * (oppOeeR.maxPct / 100);
+  const raw_oee_min = loss_kapasite > 0 ? loss_kapasite * (oppOeeR.minPct / 100) : 0;
+  const raw_oee_max = loss_kapasite > 0 ? loss_kapasite * (oppOeeR.maxPct / 100) : 0;
 
-  const raw_opv_min = loss_iscilik * (oppOpvR.minPct / 100);
-  const raw_opv_max = loss_iscilik * (oppOpvR.maxPct / 100);
+  const raw_opv_min = loss_iscilik > 0 ? loss_iscilik * (oppOpvR.minPct / 100) : 0;
+  const raw_opv_max = loss_iscilik > 0 ? loss_iscilik * (oppOpvR.maxPct / 100) : 0;
 
   // 3) RAW STRATEJİK OPERASYONEL KAZANÇ
-  const raw_lt_min = loss_kapasite * (oppLtR.minPct / 100);
-  const raw_lt_max = loss_kapasite * (oppLtR.maxPct / 100);
+  const raw_lt_min = loss_kapasite > 0 ? loss_kapasite * (oppLtR.minPct / 100) : 0;
+  const raw_lt_max = loss_kapasite > 0 ? loss_kapasite * (oppLtR.maxPct / 100) : 0;
 
-  const raw_wip_min = loss_kapasite * (oppWipR.minPct / 100);
-  const raw_wip_max = loss_kapasite * (oppWipR.maxPct / 100);
+  const raw_wip_min = loss_kapasite > 0 ? loss_kapasite * (oppWipR.minPct / 100) : 0;
+  const raw_wip_max = loss_kapasite > 0 ? loss_kapasite * (oppWipR.maxPct / 100) : 0;
 
-  const raw_sp_min = loss_kapasite * (oppSpR.minPct / 100);
-  const raw_sp_max = loss_kapasite * (oppSpR.maxPct / 100);
+  const raw_sp_min = loss_kapasite > 0 ? loss_kapasite * (oppSpR.minPct / 100) : 0;
+  const raw_sp_max = loss_kapasite > 0 ? loss_kapasite * (oppSpR.maxPct / 100) : 0;
 
   // Calculate theoretical total unscaled opportunity
   const raw_total_min = raw_sc_min + raw_fm_min + raw_mes_min + raw_yi_min + raw_ov_min +
@@ -1737,10 +1735,11 @@ AÇIKLAMALAR & SÖZLEŞME NOTLARI:
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.setAttribute("download", `${(firmaAdi || "Gemba").replace(/[^a-zA-Z0-9İıŞşĞğÇçÖöÜü\s]/g, "_")}_Saha_Olgunluk_Karnesi.xls`);
+    link.setAttribute("download", `${(firmaAdi || "Gemba").replace(/[^a-zA-Z0-9İıŞşĞğÇçÖöÜü\s]/g, "_")}_Saha_Olgunluk_Karnesi.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    showToast('Saha Olgunluk Karnesi Excel/CSV olarak başarıyla indirildi!');
   };
 
   const getGroupScoreSum = (groupName: string) => {
@@ -1774,10 +1773,14 @@ AÇIKLAMALAR & SÖZLEŞME NOTLARI:
     }
   `;
 
+  if (!authUser) {
+    return <LoginPage onLoginSuccess={(email) => setAuthUser(email)} />;
+  }
+
   if (currentView === 'dashboard') {
     return (
-      <div className="min-h-screen bg-[#F8FAFC] text-slate-900 antialiased font-sans pb-20">
-        <nav className="bg-white/80 backdrop-blur-md text-slate-900 shadow-sm sticky top-0 z-50 border-b border-slate-200/80 no-print">
+      <div className="min-h-screen bg-[#F8FAFC] text-slate-900 antialiased font-sans pb-20 overflow-x-hidden">
+        <nav className="bg-white/90 backdrop-blur-md text-slate-900 shadow-sm sticky top-0 z-50 border-b border-slate-200/80 no-print">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-20">
               <div className="flex items-center gap-4">
@@ -1785,20 +1788,34 @@ AÇIKLAMALAR & SÖZLEŞME NOTLARI:
                 <div className="hidden sm:block h-8 w-px bg-slate-200"></div>
                 <div className="flex flex-col">
                   <div className="flex items-center space-x-1.5">
-                    <span className="font-display font-extrabold text-xs sm:text-sm text-slate-900 tracking-tight uppercase">Portal</span>
-                    <span className="bg-slate-100 text-slate-700 text-[8px] font-bold px-1.5 py-0.5 rounded-full border border-slate-200 uppercase tracking-widest">PRO</span>
+                    <span className="font-display font-black text-xs sm:text-base text-slate-900 tracking-tight">Gemba QLA</span>
+                    <span className="bg-red-600 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-widest">PRO</span>
                   </div>
-                  <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Çoklu Firma ve Proje</span>
+                  <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Quick Loss Analyzer</span>
                 </div>
               </div>
-              <div className="flex items-center space-x-4">
-                <div className="flex flex-col items-end text-right pr-2">
-                  <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">MÜŞTERİ HESAP TAKİBİ</span>
+              <div className="flex items-center space-x-3 sm:space-x-4">
+                <div className="hidden lg:flex flex-col items-end text-right pr-2">
+                  <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">SAHA KURU</span>
                   <div className="flex items-center space-x-2 mt-0.5 bg-slate-50 border border-slate-200/60 px-3 py-1 rounded-lg">
                     <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
                     <span className="text-xs font-mono font-bold text-slate-700">1 EUR = {eurTry.toFixed(4)} ₺</span>
                   </div>
                 </div>
+
+                <div className="hidden sm:flex items-center gap-2 bg-slate-100/80 border border-slate-200/80 px-3 py-1.5 rounded-xl">
+                  <UserCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span className="text-xs font-mono font-bold text-slate-700 truncate max-w-[160px]">{authUser}</span>
+                </div>
+
+                <button
+                  onClick={handleLogout}
+                  className="p-2.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl transition-all duration-200 cursor-pointer flex items-center justify-center border border-red-200/60"
+                  title="Oturumu Kapat"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+
                 <button
                   onClick={() => setIsAdminOpen(true)}
                   className="p-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 rounded-xl transition-all duration-200 active:scale-95 cursor-pointer flex items-center justify-center border border-slate-200/60"
@@ -1827,11 +1844,11 @@ AÇIKLAMALAR & SÖZLEŞME NOTLARI:
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 antialiased font-sans pb-20">
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 antialiased font-sans pb-20 overflow-x-hidden">
       {isNotionMode && <style dangerouslySetInnerHTML={{ __html: notionStyles }} />}
       
       {/* ─── PREMIUM MODERN EXECUTIVE NAVBAR (NO-PRINT) ─── */}
-      <nav className="bg-white/80 backdrop-blur-md text-slate-900 shadow-sm sticky top-0 z-50 border-b border-slate-200/80 no-print">
+      <nav className="bg-white/90 backdrop-blur-md text-slate-900 shadow-sm sticky top-0 z-50 border-b border-slate-200/80 no-print">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             
@@ -1845,17 +1862,17 @@ AÇIKLAMALAR & SÖZLEŞME NOTLARI:
               <div className="hidden sm:block h-8 w-px bg-slate-200"></div>
               <div className="flex flex-col">
                 <div className="flex items-center space-x-1.5">
-                  <span className="font-display font-extrabold text-xs sm:text-sm text-slate-900 tracking-tight uppercase">Saha Analizi</span>
-                  <span className="bg-slate-100 text-slate-700 text-[8px] font-bold px-1.5 py-0.5 rounded-full border border-slate-200 uppercase tracking-widest">PRO v2.5</span>
+                  <span className="font-display font-black text-xs sm:text-base text-slate-900 tracking-tight">Gemba QLA</span>
+                  <span className="bg-red-600 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-widest">PRO</span>
                 </div>
-                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Bütçe &amp; ROI Yönetimi</span>
+                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Quick Loss Analyzer</span>
               </div>
             </div>
 
             {/* Live Exchange Rate & Demo Trigger Actions */}
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3 sm:space-x-4">
 
-              <div className="hidden md:flex flex-col items-end text-right pr-2">
+              <div className="hidden lg:flex flex-col items-end text-right pr-2">
                 <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">CANLI DÖVİZ BAZ ALIMI</span>
                 <div className="flex items-center space-x-2 mt-0.5 bg-slate-50 border border-slate-200/60 px-3 py-1 rounded-lg">
                   <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
@@ -1865,12 +1882,25 @@ AÇIKLAMALAR & SÖZLEŞME NOTLARI:
               
               <button 
                 onClick={runDemoFill} 
-                className="bg-slate-900 hover:bg-slate-800 text-white border-none px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer shadow-sm"
+                className="bg-slate-900 hover:bg-slate-800 text-white border-none px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer shadow-sm"
                 title="Sistem özelliklerini denemek için örnek otomotiv fabrikası verilerini yükler."
               >
                 <Sparkles className="w-3.5 h-3.5 text-yellow-300 fill-yellow-300 animate-spin-slow" />
                 <span className="hidden sm:inline">Örnek Veri Doldur</span>
                 <span className="sm:hidden">Örnek Doldur</span>
+              </button>
+
+              <div className="hidden sm:flex items-center gap-2 bg-slate-100/80 border border-slate-200/80 px-3 py-1.5 rounded-xl">
+                <UserCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span className="text-xs font-mono font-bold text-slate-700 truncate max-w-[140px]">{authUser}</span>
+              </div>
+
+              <button
+                onClick={handleLogout}
+                className="p-2.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl transition-all duration-200 cursor-pointer flex items-center justify-center border border-red-200/60"
+                title="Oturumu Kapat"
+              >
+                <LogOut className="w-4 h-4" />
               </button>
 
               <button
@@ -1915,15 +1945,13 @@ AÇIKLAMALAR & SÖZLEŞME NOTLARI:
       {/* ─── MAIN APP CONTENT CONTAINER ─── */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
         
-        {/* ─── REQUIRED BRANDING & LOGO HEADER (NO-PRINT) ─── */}
+        {/* ─── REQUIRED BRANDING HEADER (NO-PRINT) ─── */}
         <div 
           className="app-header no-print cursor-pointer bg-white border border-slate-200 hover:border-slate-300 rounded-2xl p-4 shadow-sm flex items-center justify-between gap-4 transition-all duration-200 hover:bg-slate-50/40 active:scale-[0.995] group mb-6" 
           onClick={() => setCurrentView('dashboard')}
           title="Firma Listesine Dön"
         >
           <div className="flex items-center gap-4">
-            <BrandLogo />
-            <div className="hidden sm:block h-8 w-px bg-slate-200"></div>
             <div className="app-title text-base sm:text-lg font-bold text-slate-900 tracking-tight">
               Saha Tespit &amp; ROI Analizörü
             </div>
@@ -4451,6 +4479,54 @@ AÇIKLAMALAR & SÖZLEŞME NOTLARI:
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ─── PWA INSTALLATION REHBERİ MODAL ─── */}
+      {isPwaModalOpen && (
+        <div className="fixed inset-0 bg-slate-950/75 backdrop-blur-md z-[99999] flex items-center justify-center p-4 animate-fade-in no-print">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-slate-200 relative space-y-5">
+            <button 
+              onClick={() => setIsPwaModalOpen(false)}
+              className="absolute top-5 right-5 p-2 bg-slate-100 hover:bg-red-50 text-slate-400 hover:text-red-600 rounded-full transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-red-50 text-red-600 rounded-2xl">
+                <Sparkles className="w-6 h-6" />
+              </div>
+              <div>
+                <h4 className="font-display font-black text-slate-900 text-base">Gemba Digital PWA Kurulumu</h4>
+                <p className="text-xs text-slate-500 font-semibold">Masaüstü &amp; Tablet Tam Ekran Sürüm Rehberi</p>
+              </div>
+            </div>
+
+            <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200/80 space-y-3 text-xs text-slate-700 font-medium leading-relaxed">
+              <p className="font-bold text-slate-900">MacBook, iPad veya Safari Üzerinde Tam Ekran Çalışmak İçin:</p>
+              <ol className="list-decimal list-inside space-y-2 text-slate-600">
+                <li>Safari üst menüsündeki <strong className="text-slate-900">"Paylaş" (Share)</strong> simgesine tıklayın.</li>
+                <li>Menüden <strong className="text-slate-900">"Ana Ekrana Ekle"</strong> veya <strong className="text-slate-900">"Dock'a Ekle"</strong> seçeneğini belirleyin.</li>
+                <li>İsim verip onaylayarak tam ekran masaüstü deneyiminin keyfini çıkarın.</li>
+              </ol>
+            </div>
+
+            <button
+              onClick={() => setIsPwaModalOpen(false)}
+              className="w-full bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs py-3 rounded-xl transition-all shadow-md cursor-pointer text-center"
+            >
+              ANLADIM, TEŞEKKÜRLER
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ─── TOAST NOTIFICATION ─── */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-[99999] bg-slate-900 text-white border border-slate-700 font-semibold text-xs px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3 animate-fade-in no-print">
+          <CheckCircle2 className="w-4.5 h-4.5 text-emerald-400 shrink-0" />
+          <span>{toastMessage}</span>
         </div>
       )}
 

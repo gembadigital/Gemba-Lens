@@ -8,19 +8,19 @@ dotenv.config();
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = Number(process.env.PORT) || 3001;
 
   app.use(express.json());
 
   // Helper for calling Gemini with retry and fallback across multiple models
   async function callGeminiDynamic(ai: GoogleGenAI, systemInstruction: string, contents: any[]): Promise<string> {
-    const models = ["gemini-3.5-flash", "gemini-3.1-flash-lite", "gemini-flash-latest"];
+    const models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"];
     let lastError: any = null;
 
     for (const model of models) {
       for (let attempt = 1; attempt <= 2; attempt++) {
         try {
-          console.log(`[Gemini Route] Trying Model: ${model}, Attempt: ${attempt}`);
+          console.log(`[Gemba AI / Gemini] Trying Model: ${model}, Attempt: ${attempt}`);
           const response = await ai.models.generateContent({
             model: model,
             contents: contents,
@@ -30,12 +30,12 @@ async function startServer() {
             },
           });
           if (response && response.text) {
-            console.log(`[Gemini Route] Success using model ${model}`);
+            console.log(`[Gemba AI / Gemini] Success using model ${model}`);
             return response.text;
           }
         } catch (err: any) {
           lastError = err;
-          console.warn(`[Gemini Route] Warning: Model ${model} failed on attempt ${attempt}:`, err.message || err);
+          console.warn(`[Gemba AI / Gemini] Warning: Model ${model} failed on attempt ${attempt}:`, err.message || err);
           // Small pause before retry
           await new Promise((resolve) => setTimeout(resolve, 150));
         }
@@ -84,106 +84,104 @@ async function startServer() {
             }
           });
 
-          const systemInstruction = `Sen, imalat sanayisinde uzman kıdemli bir Yalın Yönetim, TPM ve Saha Operasyonları Baş Danışmanı ve mali analistisin (Gemba Partner AI Asistanı).
+          const systemInstruction = `GEMBA AI SALES COACH – SYSTEM ROLE & CONVERSATIONAL BUSINESS LOGIC
 
-Görevin, imalat tesislerindeki kayıp analizlerini yaparak bunları finansal etki matrislerine dönüştürmek, kayıpları sınıflandırmak ve yalın çalışma opsiyonlarına göre fırsat maliyetlerini hesaplamaktır.
+Sen, Gemba Partner'ın kıdemli OPEX Sales Director, Cost Control Advisor ve Operational Excellence Coach rolündeki yapay zeka danışmanı ve satış kapanış koçusun (Gemba AI Sales Coach).
 
-KRİTİK HESAPLAMA MANTIĞI VE ZORUNLU KURALLAR (MATEMATİKSEL SINIRLAR):
-Analizlerinde her zaman kullanıcının girdiği şirketin Yıllık Cirosunu ("turnover") temel alarak şu formülleri sıkı sıkıya uygulayacaksın:
+Sen sadece statik bir metin üreticisi değilsin; dinamik, son derece zeki, ikna edici ve veriye dayalı bir İLETİŞİMCİ CHATBOT'sun.
 
-1. Toplam COPQ Havuzu (Total Cost of Poor Quality):
-   - COPQ = Yıllık Ciro * 0.10 (Cironun tam olarak %10'u). Bu maksimum adreslenebilir kayıp havuzudur.
-   
-2. Kayıp Dağılımı ve Ağırlıklandırılması (6 Temel Sınıf):
-   - Toplam COPQ Havuzunu, sahadaki öncelikli problemlere göre 6 temel kategoriye dağıt (% - TL bazında). Bu 6 kategorinin sum'ı (toplamı) kuruşu kuruşuna Toplam COPQ Havuzuna eşit olmalıdır (%100):
-     * Duruşlar (Downtimes / Setup)
-     * Kalite (Quality Defect Costs)
-     * Fazla Mesai (Overtime Inefficiencies)
-     * Hurda (Scrap / Waste Material)
-     * İşçilik Verimsizliği (Labor Inefficiency)
-     * Kapasite Kayıpları (Capacity Utilization Losses)
+TEMEL ROL VE İLETİŞİM DİNAMİĞİ:
+1. RAPOR İSTENDİĞİNDE ("rapor oluştur", "analiz et", "başla" veya ilk analizde):
+   Sistemdeki 4 temel sütunu değerlendirip satışı kapatacak şekilde kapsamlı rapor üretirsin:
+   - ① Fabrika Assessment Olgunluk Seviyesi (Level 1-5 & Teknik Disiplin Skoru)
+   - ② Ürün Maliyet Dağılımı (Direkt İşçilik, Hammadde, Enerji, Genel Üretim Giderleri)
+   - ③ Cost of Poor Quality (COPQ) Kayıpları (Duruşlar, Hurda, Kalite/Tamir, Mesai, Verimsizlik, Kapasite)
+   - ④ OPEX Çalışmaları & Geri Kazanım Potansiyeli (Paket 01-04 danışmanlık bütçeleri, TL/USD/EUR kazanım & ROI)
+   Bu 4 sütunu harmanlayarak KESİNLİKLE aşağıdaki 9 başlık altında satışı kapatacak güçlü C-Level satış cümlelerine dönüştürürsün.
 
-3. Yalın Çalışma Opsiyonları ve Geri Kazanım Oranları (Fırsat Maliyeti):
-   - Geri kazanılabilir fırsat maliyetleri, yukarıdaki COPQ Havuzunun aşağıdaki yüzdelik başarı oranları ile çarpımıdır (başka formül kullanma!):
-     * op1 (Standart Program - 48 Adam-gün): Min Recovery = %5 | Max Recovery = %8 of the pool.
-     * op2 (Yoğunlaştırılmış Program - 96 Adam-gün): Min Recovery = %10 | Max Recovery = %15 of the pool.
-     * op3 (Interim Yönetimi - 144 Adam-gün): Min Recovery = %17 | Max Recovery = %25 of the pool.
-     * op4 (2 Kaynaklı Interim Yönetim - 192 Adam-gün): Min Recovery = %20 | Max Recovery = %30 of the pool.
-     
-   - Kategorilerdeki İyileşme Dağılımını (Min-Max) yukarıda hesaplanan bu toplam limit değerlere göre paylaştıracaksın.
+2. KULLANICI SORU VEYA İTİRAZ SORDUĞUNDA (İnteraktif Chatbot Modu):
+   Kullanıcının her türlü sorusuna, fiyat itirazına, bütçe tereddüdüne veya teknik açıklama talebine kıdemli bir OPEX Satış Direktörü gibi veriye ve finansal mantığa dayalı ikna edici cevap verirsin.
+   - İtirazları doğrudan finansal ROI, adam-gün verimliliği ve risk azaltma argümanlarıyla çözersin.
+   - Danışmanlığın en büyük çıktısını "müşterinin kendi bünyesinde sürdürülebilir Kaizen yetkinliği kazandırmak" olarak vurgularsın.
+   - Cevaplarını kısa, etkili, yönetici seviyesinde ve aksiyona yönlendirici tutarsın.
 
-KRİTİK TALİMAT VE YAPISAL SINIR (SÖZÜ):
-Eğer kullanıcının sorduğu spesifik sektör, ürün grubu veya konuya ilişkin elinde somut, net, gerçeğe dayalı imalat verisi/tecrübesi bulunmuyorsa kesinlikle uydurma veri, hayali benchmark oranları veya kurgu bir içerik üretme! 
-Eğer veri veya analiz bilgisine sahip değilsen, cevabına kesinlikle şu net ifadeyle başla veya doğrudan bu cümleyi yaz: 
-"Bu sektörel alan veya ürün grubu ile ilgili elimizde yeterli somut benchmark verisi bulunmadığı için yorum yok."
-Böylece kullanıcıyı asılsız veya yanıltıcı verilerle meşgul etmemiş olursun.
+MÜŞTERİ / FABRİKA VERİ SETİ:
+- Sektör / Ürün Grubu: ${sector} / ${urunGrubu}
+- Yıllık Ciro: ${currencySymbol} ${turnoverLira}
+- COPQ Oranı: %${copqRate}
+- Mevcut OEE: %${oee}
+- Para Birimi: ${currency} (${currencySymbol})
 
-Eğer veriye ve bilgiye sahipsen:
-Kullanıcının raporlama isteklerine, tam olarak aşağıdaki Türkçe MD (Markdown) yapısı ve başlıkları ile birebir uyumlu profesyonel bir rapor sunarak cevap vereceksin. Herhangi bir ekstra giriş veya son söz ekleme, doğrudan MD raporu ile başla ve bitir:
+RAPOR OLUŞTURMA İSTEKLERİ İÇİN ZORUNLU 9 BAŞLIKLI FORMAT:
 
----
+EXECUTIVE SALES INSIGHT
+[Fabrika Assessment seviyesi, Ürün Maliyet yapısı, COPQ kayıpları ve OPEX kazanımlarını özetleyen 2-4 cümlelik satışı kapatıcı yönetici özeti]
 
-## 1. SAHA TESPİTİ POTANSYEL KAYIP DAĞILIMI
-*Toplam Kalitesizlik Maliyeti Havuzu (Cironun %10'u): **[Hesaplanan COPQ Pool] TL/Yıl** olarak hesaplanmıştır. Girilen saha verilerine göre bu kayıpların kök neden dağılımı şu şekildedir:*
+--------------------------------------------------
 
-| Potansiyel Kayıp Kalemi | Dağılım Oranı (%) | Yıllık Toplam Maliyet Kaybı (TL) |
-| :--- | :---: | :---: |
-| **Duruşlar & Model Değişimi** | %[Oran] | [TL] TL |
-| **Kalite (Hatalı Ürün/Tamir)** | %[Oran] | [TL] TL |
-| **Gereksiz Fazla Mesai Maliyetleri** | %[Oran] | [TL] TL |
-| **Hurda & Fire Malzeme Kaybı** | %[Oran] | [TL] TL |
-| **İşçilik & Operatör Verimsizliği** | %[Oran] | [TL] TL |
-| **Kapasite Kullanım Kayıpları** | %[Oran] | [TL] TL |
-| **TOPLAM ADRESLENEBİLİR KAYIP** | **%100** | **[COPQ Pool] TL** |
+1. CURRENT LOSS PICTURE
+- Toplam Ciro: ${currencySymbol} ${turnoverLira}
+- Tespit Edilen Yıllık Kayıp: ${currencySymbol} [Hesaplanan Toplam Kayıp]
+- Kayıp / Ciro Oranı: %[Hesaplanan Oran]
+- COPQ Havuzu: ${currencySymbol} [COPQ Havuzu]
 
----
+--------------------------------------------------
 
-## 2. YALIN ÇALIŞMA OPSİYONLARI VE FIRSAT MALİYETİ ANALİZİ
-*Bu bölümde, yukarıdaki kayıpların op1 - op4 seviyelerindeki adam-gün çalışmalarına göre ne kadarının geri kazanılabileceği (Fırsat Maliyeti) min-max aralıklarla hesaplanmıştır.*
+2. RECOVERY POTENTIAL
+- Minimum Potential: ${currencySymbol} [Min Potansiyel]
+- Expected Potential: ${currencySymbol} [Beklenen Potansiyel]
+- Maximum Potential: ${currencySymbol} [Max Potansiyel]
 
-### 🛠️ Opsiyon 1 - Standart Program (48 Adam-gün)
-* **Kapsam ve Yalın Araçlar:** 5S, Standart İş, Görsel Yönetim, Temel Kaizen.
-* **Potansiyel Yıllık Kazanç Aralığı:** **[Min Gain op1] TL** ile **[Max Gain op1] TL** arası.
-* **Kayıp Kalemlerindeki İyileşme Dağılımı (Min - Max):**
-  * Duruşlar & Model Değişimi: [Min] - [Max] TL
-  * Kalite & Hurda: [Min] - [Max] TL
-  * İşçilik & Mesai: [Min] - [Max] TL
+--------------------------------------------------
 
-### 🛠️ Opsiyon 2 - Yoğunlaştırılmış Program (96 Adam-gün)
-* **Kapsam ve Yalın Araçlar:** Değer Akış Haritalama (VSM), Hat Dengeleme, Sürekli Akış.
-* **Potansiyel Yıllık Kazanç Aralığı:** **[Min Gain op2] TL** ile **[Max Gain op2] TL** arası.
-* **Kayıp Kalemlerindeki İyileşme Dağılımı (Min - Max):**
-  * Duruşlar & Model Değişimi: [Min] - [Max] TL
-  * Kalite & Hurda: [Min] - [Max] TL
-  * İşçilik & Mesai: [Min] - [Max] TL
-  * Kapasite Kullanım Kayıpları: [Min] - [Max] TL
+3. PHASE 1 – QUICK WINS (HIZLI İYİLEŞTİRMELER)
+- Önerilen Çalışmalar: 5S & Standart İş, SMED Setup Kısaltma, Görsel Yönetim, OEE İyileştirme, Temel Kaizen.
+- Tahmini Potansiyel Geri Kazanım: ${currencySymbol} [Faz 1 Potansiyel]
+- Tahmini Danışmanlık Süresi: [Faz 1 Adam/Gün] Adam-gün
 
-### 🛠️ Opsiyon 3 - Interim Yönetim (144 Adam-gün)
-* **Kapsam ve Yalın Araçlar:** SMED (Hızlı Model Değişimi), Çekme Sistemi (Kanban), Kaizen.
-* **Potansiyel Yıllık Kazanç Aralığı:** **[Min Gain op3] TL** ile **[Max Gain op3] TL** arası.
-* **Kayıp Kalemlerindeki İyileşme Dağılımı (Min - Max):**
-  * Duruşlar & Model Değişimi: [Min] - [Max] TL
-  * Kalite & Hurda: [Min] - [Max] TL
-  * İşçilik & Mesai: [Min] - [Max] TL
-  * Kapasite Kullanım Kayıpları: [Min] - [Max] TL
+--------------------------------------------------
 
-### 🛠️ Opsiyon 4 - 2 Kaynaklı Interim Yönetim (192 Adam-gün)
-* **Kapsam ve Yalın Araçlar:** TPM (Toplam Verimli Bakım), Poka-Yoke, Dijital Performans Yönetimi.
-* **Potansiyel Yıllık Kazanç Aralığı:** **[Min Gain op4] TL** ile **[Max Gain op4] TL** arası.
-* **Kayıp Kalemlerindeki İyileşme Dağılımı (Min - Max):**
-  * Duruşlar & Model Değişimi: [Min] - [Max] TL
-  * Kalite & Hurda: [Min] - [Max] TL
-  * İşçilik & Mesai: [Min] - [Max] TL
-  * Kapasite Kullanım Kayıpları: [Min] - [Max] TL
+4. PHASE 2 – STRATEGIC / INVESTMENT IMPROVEMENTS
+- Önerilen Çalışmalar: VSM Akış Yenileme, Otomasyon, Layout Değişikliği, Dijital OEE & Poka-Yoke, Üretim Sistemi Dönüşümü.
+- Tahmini Potansiyel Geri Kazanım: ${currencySymbol} [Faz 2 Potansiyel]
+- Tahmini Yatırım İhtiyacı: [Süreç / Ekipman Odaklı Yatırım]
 
----
+--------------------------------------------------
 
-## 3. SEKTÖREL BENCHMARK VE TOPLANTI STRATEJİSİ
-* **Sektörel Zorluklar:** Bu imalat grubunda en çok bütçe tüketen kronik kayıplar. Lütfen internet benchmark kaynaklarına ("${sector || 'Belirtilmedi'}") dayalı gerçek sektörel kıyaslamaları getir.
-* **Müşteri İçin Fırsat Penceresi:** Dağılım tablosundaki en yüksek kaybın sektörel olarak nasıl çözülebileceğine dair profesyonel ve etkileyici danışmanlık yorumu.
+5. RECOMMENDED CONSULTING PACKAGE (PRIMARY RECOMMENDATION)
+- Paket Adı: [Önerilen Danışmanlık Programı]
+- Danışmanlık Süresi: [Adam/Gün] Adam-gün
+- Danışmanlık Proje Bütçesi: ${currencySymbol} [Proje Bütçesi]
+- Potansiyel Yıllık Geri Kazanım: ${currencySymbol} [Min Kazanç] - ${currencySymbol} [Max Kazanç]
+- Potansiyel ROI Oranı: [Min ROI]x – [Max ROI]x
+- Ana Gerekçe & Çarpan Etkisi: [Gerekçe açıklaması]
 
----
-*Not: Hesaplamalar firmanın ciro ve operasyonel beyanları üzerinden kısıtlanmış olup, hayata geçmeyen her opsiyon işletme için bir "Fırsat Maliyeti" (Masada Bırakılan Para) olarak kabul edilmiştir.*`;
+--------------------------------------------------
+
+6. SECOND OPTION (ALTERNATIVE PACKAGE)
+- Paket Adı: [Alternatif Program]
+- Danışmanlık Süresi: [Adam/Gün] Adam-gün
+- Danışmanlık Proje Bütçesi: ${currencySymbol} [Proje Bütçesi]
+- Potansiyel Yıllık Geri Kazanım: ${currencySymbol} [Min Kazanç] - ${currencySymbol} [Max Kazanç]
+- Potansiyel ROI Oranı: [Min ROI]x – [Max ROI]x
+
+--------------------------------------------------
+
+7. CAPABILITY BUILDING (İÇ YETKİNLİK DÖNÜŞÜMÜ)
+- Müşteri Ekibinde Oluşturulacak Yetkinlikler: Kaizen Liderleri, A3 Problem Çözme Yetkinliği, Günlük Yönetim Disiplini, Standart İş Kültürü.
+- Stratejik Hedef: "Sürdürülebilir Kaizen ve Kendi Kendine Yeten Operasyonel Mükemmellik Organizasyonu."
+
+--------------------------------------------------
+
+8. SALES MESSAGE (SATAYI KAPATACAK GÜÇLÜ SATIŞ CÜMLELERİ)
+- [Assessment seviyesi ve ürün maliyetlerinden türetilmiş 1. satış cümlesi]
+- [COPQ kayıplarından ve geri kazanımdan türetilmiş 2. finansal satış cümlesi]
+- [İç yetkinlik ve Kaizen dönüşümünü ön plana çıkaran 3. satış cümlesi]
+
+--------------------------------------------------
+
+9. RECOMMENDED NEXT STEP
+- [Müşterinin sözleşmeyi imzalamasını kolaylaştıracak tek bir sonraki adım önerisi]`;
 
           const contentsFormat = messages.map(m => ({
             role: m.role === 'assistant' ? 'model' : 'user',
@@ -217,13 +215,6 @@ Kullanıcının raporlama isteklerine, tam olarak aşağıdaki Türkçe MD (Mark
   // Local helper generators for programmatic resilience
   function generateDeterministicReport(sec: string, prod: string, turnoverVal: number, currSym: string): string {
     const copqPool = Math.round(turnoverVal * 0.10);
-    const durusLoss = Math.round(copqPool * 0.25);
-    const kaliteLoss = Math.round(copqPool * 0.20);
-    const mesaiLoss = Math.round(copqPool * 0.15);
-    const hurdaLoss = Math.round(copqPool * 0.15);
-    const iscilikLoss = Math.round(copqPool * 0.15);
-    const kapasiteLoss = Math.round(copqPool * 0.10);
-
     const op1Min = Math.round(copqPool * 0.05);
     const op1Max = Math.round(copqPool * 0.08);
     const op2Min = Math.round(copqPool * 0.10);
@@ -233,69 +224,77 @@ Kullanıcının raporlama isteklerine, tam olarak aşağıdaki Türkçe MD (Mark
     const op4Min = Math.round(copqPool * 0.20);
     const op4Max = Math.round(copqPool * 0.30);
 
-    return `*(Not: Sunucu yoğunluğu nedeniyle hızlı yerel maliyet simülatörü devreye girdi; analizler doğru matematiksel formüllere göre yerel olarak doğrulanmıştır.)*
+    const budgetOp1 = 1560000;
+    const budgetOp2 = 2808000;
 
-## 1. SAHA TESPİTİ POTANSYEL KAYIP DAĞILIMI
-*Toplam Kalitesizlik Maliyeti Havuzu (Cironun %10'u): **${currSym}${copqPool.toLocaleString('tr-TR')} / Yıl** olarak hesaplanmıştır. Girilen saha verilerine göre bu kayıpların kök neden dağılımı şu şekildedir:*
+    return `EXECUTIVE SALES INSIGHT
+${sec} sektöründeki tesisinizde yapılan ön analizde, yıllık cironuzun yaklaşık %10'u seviyesinde (${currSym}${copqPool.toLocaleString('tr-TR')}) doğrudan adreslenebilir kalitesizlik ve verimsizlik kayıp havuzu tespit edilmiştir. Önerimiz bu kaybın tamamını hedeflemek yerine, Faz 1 kapsamında düşük yatırımla geri kazanılabilecek ${currSym}${op2Min.toLocaleString('tr-TR')} - ${currSym}${op2Max.toLocaleString('tr-TR')} aralığını ilk 104 adam-günlük programla sistematik olarak kâra dönüştürmektir.
 
-| Potansiyel Kayıp Kalemi | Dağılım Oranı (%) | Yıllık Toplam Maliyet Kaybı (${currSym}) |
-| :--- | :---: | :---: |
-| **Duruşlar & Model Değişimi** | %25 | ${durusLoss.toLocaleString('tr-TR')} ${currSym} |
-| **Kalite (Hatalı Ürün/Tamir)** | %20 | ${kaliteLoss.toLocaleString('tr-TR')} ${currSym} |
-| **Gereksiz Fazla Mesai Maliyetleri** | %15 | ${mesaiLoss.toLocaleString('tr-TR')} ${currSym} |
-| **Hurda & Fire Malzeme Kaybı** | %15 | ${hurdaLoss.toLocaleString('tr-TR')} ${currSym} |
-| **İşçilik & Operatör Verimsizliği** | %15 | ${iscilikLoss.toLocaleString('tr-TR')} ${currSym} |
-| **Kapasite Kullanım Kayıpları** | %10 | ${kapasiteLoss.toLocaleString('tr-TR')} ${currSym} |
-| **TOPLAM ADRESLENEBİLİR KAYIP** | **%100** | **${copqPool.toLocaleString('tr-TR')} ${currSym}** |
+--------------------------------------------------
 
----
+1. CURRENT LOSS PICTURE
+- Toplam Ciro: ${currSym}${turnoverVal.toLocaleString('tr-TR')}
+- Tespit Edilen Yıllık Kayıp: ${currSym}${copqPool.toLocaleString('tr-TR')}
+- Kayıp / Ciro Oranı: %10.0
+- COPQ Havuzu: ${currSym}${copqPool.toLocaleString('tr-TR')}
 
-## 2. YALIN ÇALIŞMA OPSİYONLARI VE FIRSAT MALİYETİ ANALİZİ
-*Bu bölümde, yukarıdaki kayıpların opsiyon seviyelerindeki adam-gün çalışmalarına göre ne kadarının geri kazanılabileceği (Fırsat Maliyeti) min-max aralıklarla hesaplanmıştır.*
+--------------------------------------------------
 
-### 🛠️ Opsiyon 1 - Standart Program (48 Adam-gün)
-* **Kapsam ve Yalın Araçlar:** 5S, Standart İş, Görsel Yönetim, Temel Kaizen.
-* **Potansiyel Yıllık Kazanç Aralığı:** **${currSym}${op1Min.toLocaleString('tr-TR')}** ile **${currSym}${op1Max.toLocaleString('tr-TR')}** arası.
-* **Kayıp Kalemlerindeki İyileşme Dağılımı (Min - Max):**
-  * Duruşlar & Model Değişimi: ${currSym}${Math.round(copqPool * 0.02).toLocaleString('tr-TR')} - ${currSym}${Math.round(copqPool * 0.03).toLocaleString('tr-TR')}
-  * Kalite & Hurda: ${currSym}${Math.round(copqPool * 0.02).toLocaleString('tr-TR')} - ${currSym}${Math.round(copqPool * 0.03).toLocaleString('tr-TR')}
-  * İşçilik & Mesai: ${currSym}${Math.round(copqPool * 0.01).toLocaleString('tr-TR')} - ${currSym}${Math.round(copqPool * 0.02).toLocaleString('tr-TR')}
+2. RECOVERY POTENTIAL
+- Minimum Potential: ${currSym}${op1Min.toLocaleString('tr-TR')} (%5 Kayıp Azaltımı)
+- Expected Potential: ${currSym}${op2Min.toLocaleString('tr-TR')} (%10 Kayıp Azaltımı)
+- Maximum Potential: ${currSym}${op4Max.toLocaleString('tr-TR')} (%30 Kayıp Azaltımı)
 
-### 🛠️ Opsiyon 2 - Yoğunlaştırılmış Program (96 Adam-gün)
-* **Kapsam ve Yalın Araçlar:** Değer Akış Haritalama (VSM), Hat Dengeleme, Sürekli Akış.
-* **Potansiyel Yıllık Kazanç Aralığı:** **${currSym}${op2Min.toLocaleString('tr-TR')}** ile **${currSym}${op2Max.toLocaleString('tr-TR')}** arası.
-* **Kayıp Kalemlerindeki İyileşme Dağılımı (Min - Max):**
-  * Duruşlar & Model Değişimi: ${currSym}${Math.round(copqPool * 0.03).toLocaleString('tr-TR')} - ${currSym}${Math.round(copqPool * 0.04).toLocaleString('tr-TR')}
-  * Kalite & Hurda: ${currSym}${Math.round(copqPool * 0.03).toLocaleString('tr-TR')} - ${currSym}${Math.round(copqPool * 0.04).toLocaleString('tr-TR')}
-  * İşçilik & Mesai: ${currSym}${Math.round(copqPool * 0.02).toLocaleString('tr-TR')} - ${currSym}${Math.round(copqPool * 0.04).toLocaleString('tr-TR')}
-  * Kapasite Kullanım Kayıpları: ${currSym}${Math.round(copqPool * 0.02).toLocaleString('tr-TR')} - ${currSym}${Math.round(copqPool * 0.03).toLocaleString('tr-TR')}
+--------------------------------------------------
 
-### 🛠️ Opsiyon 3 - Interim Yönetim (144 Adam-gün)
-* **Kapsam ve Yalın Araçlar:** SMED (Hızlı Model Değişimi), Çekme Sistemi (Kanban), Kaizen.
-* **Potansiyel Yıllık Kazanç Aralığı:** **${currSym}${op3Min.toLocaleString('tr-TR')}** ile **${currSym}${op3Max.toLocaleString('tr-TR')}** arası.
-* **Kayıp Kalemlerindeki İyileşme Dağılımı (Min - Max):**
-  * Duruşlar & Model Değişimi: ${currSym}${Math.round(copqPool * 0.05).toLocaleString('tr-TR')} - ${currSym}${Math.round(copqPool * 0.08).toLocaleString('tr-TR')}
-  * Kalite & Hurda: ${currSym}${Math.round(copqPool * 0.04).toLocaleString('tr-TR')} - ${currSym}${Math.round(copqPool * 0.06).toLocaleString('tr-TR')}
-  * İşçilik & Mesai: ${currSym}${Math.round(copqPool * 0.04).toLocaleString('tr-TR')} - ${currSym}${Math.round(copqPool * 0.06).toLocaleString('tr-TR')}
-  * Kapasite Kullanım Kayıpları: ${currSym}${Math.round(copqPool * 0.04).toLocaleString('tr-TR')} - ${currSym}${Math.round(copqPool * 0.05).toLocaleString('tr-TR')}
+3. PHASE 1 – QUICK WINS (HIZLI İYİLEŞTİRMELER)
+- Önerilen Çalışmalar: 5S Saha Düzeni, SMED Model Değişimi, Görsel Yönetim, Standart İş Talimatları, Temel Kaizen.
+- Tahmini Potansiyel Geri Kazanım: ${currSym}${op1Min.toLocaleString('tr-TR')} - ${currSym}${op1Max.toLocaleString('tr-TR')} / yıl
+- Tahmini Danışmanlık Süresi: 52 Adam-gün (1 gün/hafta)
 
-### 🛠️ Opsiyon 4 - 2 Kaynaklı Interim Yönetim (192 Adam-gün)
-* **Kapsam ve Yalın Araçlar:** TPM (Toplam Verimli Bakım), Poka-Yoke, Dijital Performans Yönetimi.
-* **Potansiyel Yıllık Kazanç Aralığı:** **${currSym}${op4Min.toLocaleString('tr-TR')}** ile **${currSym}${op4Max.toLocaleString('tr-TR')}** arası.
-* **Kayıp Kalemlerindeki İyileşme Dağılımı (Min - Max):**
-  * Duruşlar & Model Değişimi: ${currSym}${Math.round(copqPool * 0.06).toLocaleString('tr-TR')} - ${currSym}${Math.round(copqPool * 0.10).toLocaleString('tr-TR')}
-  * Kalite & Hurda: ${currSym}${Math.round(copqPool * 0.05).toLocaleString('tr-TR')} - ${currSym}${Math.round(copqPool * 0.07).toLocaleString('tr-TR')}
-  * İşçilik & Mesai: ${currSym}${Math.round(copqPool * 0.05).toLocaleString('tr-TR')} - ${currSym}${Math.round(copqPool * 0.07).toLocaleString('tr-TR')}
-  * Kapasite Kullanım Kayıpları: ${currSym}${Math.round(copqPool * 0.04).toLocaleString('tr-TR')} - ${currSym}${Math.round(copqPool * 0.06).toLocaleString('tr-TR')}
+--------------------------------------------------
 
----
+4. PHASE 2 – STRATEGIC / INVESTMENT IMPROVEMENTS
+- Önerilen Çalışmalar: Değer Akış Haritalama (VSM), Sürekli Akış Hücre Tasarımı, Hat Dengeleme, Otomasyon & Dijital OEE.
+- Tahmini Potansiyel Geri Kazanım: ${currSym}${op2Min.toLocaleString('tr-TR')} - ${currSym}${op4Max.toLocaleString('tr-TR')} / yıl
+- Tahmini Yatırım İhtiyacı: Süreç Standartlaştırma & Düşük Ekipman Yatırımı
 
-## 3. SEKTÖREL BENCHMARK VE TOPLANTI STRATEJİSİ
-* **Sektörel Zorluklar:** **${sec}** / **${prod}** imalatında en çok bütçe tüketen kronik kayıplar, verimsiz model değişim süreleri ve kontrolsüz duruşlardır. Ortalama OEE oranları bu grupta genelde %50-%60 aralığında kalmaktadır.
-* **Müşteri İçin Fırsat Penceresi:** Tespit ettiğimiz cironun %10'u seviyesindeki kalitesizlik kaybı doğru metotlarla (özellikle SMED ve Otonom Bakım ile) kısa sürede aşılabilir. 2 Kaynaklı Interim Yönetim programı ile bu kaybın yıllık **${currSym}${op4Max.toLocaleString('tr-TR')}**'e kadarlık kısmı doğrulanarak doğrudan şirket kâr hanesine geri kazandırılabilir.
+--------------------------------------------------
 
----
-*Not: Hesaplamalar firmanın ciro ve operasyonel beyanları üzerinden kısıtlanmış olup, hayata geçmeyen her opsiyon işletme için bir "Fırsat Maliyeti" (Masada Bırakılan Para) olarak kabul edilmiştir.*`;
+5. RECOMMENDED CONSULTING PACKAGE (PRIMARY RECOMMENDATION)
+- Paket Adı: PROGRAM 02 — Hızlandırılmış Dönüşüm Programı
+- Danışmanlık Süresi: 104 Adam-gün (2 gün/hafta)
+- Danışmanlık Proje Bütçesi: ${currSym}${budgetOp2.toLocaleString('tr-TR')}
+- Potansiyel Yıllık Geri Kazanım: ${currSym}${op2Min.toLocaleString('tr-TR')} - ${currSym}${op2Max.toLocaleString('tr-TR')} / yıl
+- Potansiyel ROI Oranı: ${(op2Min / budgetOp2).toFixed(1)}x – ${(op2Max / budgetOp2).toFixed(1)}x
+- Ana Gerekçe & Çarpan Etkisi: 2 gün/haftalık sahada aktif danışmanlık rehberliği, SMED ile açığa çıkan kapasitenin ciroya dönüşmesini ve ekibin kendi Kaizenlerini yapmasını garanti eder.
+
+--------------------------------------------------
+
+6. SECOND OPTION (ALTERNATIVE PACKAGE)
+- Paket Adı: PROGRAM 01 — Standart Gelişim Programı
+- Danışmanlık Süresi: 52 Adam-gün (1 gün/hafta)
+- Danışmanlık Proje Bütçesi: ${currSym}${budgetOp1.toLocaleString('tr-TR')}
+- Potansiyel Yıllık Geri Kazanım: ${currSym}${op1Min.toLocaleString('tr-TR')} - ${currSym}${op1Max.toLocaleString('tr-TR')} / yıl
+- Potansiyel ROI Oranı: ${(op1Min / budgetOp1).toFixed(1)}x – ${(op1Max / budgetOp1).toFixed(1)}x
+
+--------------------------------------------------
+
+7. CAPABILITY BUILDING (İÇ YETKİNLİK DÖNÜŞÜMÜ)
+- Müşteri Ekibinde Oluşturulacak Yetkinlikler: Kaizen Liderleri, A3 Problem Çözme Yetkinliği, Günlük Yönetim Disiplini, Standart İş Kültürü.
+- Stratejik Hedef: "Danışmanlık bittiğinde kendi kayıplarını kendisi bulup çözen sürdürülebilir bir operasyonel mükemmellik organizasyonu."
+
+--------------------------------------------------
+
+8. SALES MESSAGE (C-LEVEL SATIŞ CÜMLELERİ)
+- "Bugün tesisinizde yaklaşık ${currSym}${copqPool.toLocaleString('tr-TR')} seviyesinde görünür bir kayıp havuzu bulunuyor. Amacımız bunun tamamını değil, ilk fazda düşük yatırımla geri kazanılacak ${currSym}${op2Min.toLocaleString('tr-TR')}'lik bölümünü kâra dönüştürmektir."
+- "Bu çalışma sadece dışarıdan yapılan bir Lean projesi değil; şirketinizin kendi içinde sürekli iyileştirme yapabilecek insan kaynağını yetiştirme dönüşümüdür."
+- "104 adam-günlük çalışma yalnızca danışmanlık süresi değildir; daha fazla problem alanına girip ekibinizin problem çözme sistemini sahiplenmesini sağlar."
+
+--------------------------------------------------
+
+9. RECOMMENDED NEXT STEP
+- "2 günlük Gemba Loss Assessment ile mevcut kayıp havuzunun sahadaki finansal doğrulamasını yapalım ve 30-60-90 günlük ilk hızlı geri kazanım planını çıkaralım."`;
   }
 
   function getDeterministicChatResponse(userMsg: string): string {

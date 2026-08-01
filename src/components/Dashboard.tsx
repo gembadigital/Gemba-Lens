@@ -144,11 +144,12 @@ export default function Dashboard({ onOpenCompany, onNewCompanyCreated }: Dashbo
             <span className="bg-red-650 text-white text-[9px] font-extrabold px-3 py-1 rounded-full border border-red-500/30 uppercase tracking-widest">
               PORTAL KONTROL PANELİ
             </span>
-            <h1 className="text-2xl sm:text-3xl font-display font-black tracking-tight">
-              Gemba Assessment Platform
+            <h1 className="text-2xl sm:text-3xl font-display font-black tracking-tight flex items-center gap-2">
+              Gemba QLA
+              <span className="text-xs bg-red-600 text-white font-bold px-2 py-0.5 rounded-md">Quick Loss Analyzer</span>
             </h1>
             <p className="text-slate-400 text-xs sm:text-sm font-semibold max-w-xl">
-              Endüstriyel danışmanlık operasyonlarınızı, müşteri verilerinizi ve ROI fizibilite çalışmalarınızı tek bir platform üzerinden profesyonelce yönetin.
+              Endüstriyel danışmanlık operasyonlarınızı, müşteri verilerinizi ve ROI kayıp analizlerinizi tek bir portal üzerinden profesyonelce yönetin.
             </p>
           </div>
 
