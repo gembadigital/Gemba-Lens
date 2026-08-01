@@ -2878,7 +2878,7 @@ AÇIKLAMALAR & SÖZLEŞME NOTLARI:
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
             {/* LEFT COLUMN: FINANCIAL DATA ENTRY FORM (COL SPAN 7) */}
-            <div className="lg:col-span-12 xl:col-span-12 xl:col-span-7 space-y-8">
+            <div className="lg:col-span-12 xl:col-span-7 space-y-8">
               
               <section className="bg-white rounded-3xl border border-slate-200/85 shadow-md overflow-hidden relative">
                 <div className="absolute top-0 inset-x-0 h-1.5 bg-red-655"></div>
@@ -3421,7 +3421,7 @@ AÇIKLAMALAR & SÖZLEŞME NOTLARI:
             </div>
 
             {/* RIGHT COLUMN: PROFESSIONAL MANAGEMENT CONSULTING AUDIT REPORT (COL SPAN 5) */}
-            <div className="lg:col-span-12 xl:col-span-12 xl:col-span-5 space-y-8">
+            <div className="lg:col-span-12 xl:col-span-5 space-y-8">
               
               {/* ─── SECTION 1: EXECUTIVE SUMMARY (YÖNETİCİ ÖZETİ) ─── */}
               <div className="bg-white rounded-3xl border border-slate-200/95 shadow-sm p-6 relative overflow-hidden">

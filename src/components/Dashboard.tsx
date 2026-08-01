@@ -188,7 +188,7 @@ export default function Dashboard({ onOpenCompany, onNewCompanyCreated }: Dashbo
           </div>
 
           {/* Card 3: Total Potential Saving */}
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center space-x-3.5 col-span-2 sm:col-span-1">
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center space-x-3.5 col-span-1">
             <div className="p-3 bg-emerald-500/10 rounded-xl">
               <TrendingUp className="w-5 h-5 text-emerald-500" />
             </div>
