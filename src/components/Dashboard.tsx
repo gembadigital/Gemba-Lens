@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { 
   Building2, Users, TrendingUp, BarChart3, Search, Filter, 
   Plus, Copy, FolderArchive, FolderOpen, Calendar, MapPin, 
-  Briefcase, CheckCircle2, ChevronRight, Sparkles, RefreshCw, X
+  Briefcase, CheckCircle2, ChevronRight, Sparkles, RefreshCw, X,
+  Cloud, CloudOff, Database, Settings
 } from 'lucide-react';
 import { Company, GembaDB } from '../db';
+import { getSupabaseConfig, saveSupabaseCredentials } from '../lib/supabase';
 
 interface DashboardProps {
   onOpenCompany: (companyId: string) => void;
@@ -16,6 +18,11 @@ export default function Dashboard({ onOpenCompany, onNewCompanyCreated }: Dashbo
   const [stats, setStats] = useState(() => GembaDB.getDashboardStats());
   // Companies list
   const [companies, setCompanies] = useState<Company[]>([]);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [dbConfig, setDbConfig] = useState(() => getSupabaseConfig());
+  const [isDbModalOpen, setIsDbModalOpen] = useState(false);
+  const [dbUrl, setDbUrl] = useState(dbConfig.url);
+  const [dbKey, setDbKey] = useState(dbConfig.anonKey);
   
   // Filter/Search states
   const [search, setSearch] = useState('');
@@ -31,10 +38,19 @@ export default function Dashboard({ onOpenCompany, onNewCompanyCreated }: Dashbo
   const [newLocation, setNewLocation] = useState('');
   const [newConsultant, setNewConsultant] = useState('Saha Danışmanı');
 
-  // Refresh lists
-  const refreshData = () => {
-    setStats(GembaDB.getDashboardStats());
-    setCompanies(GembaDB.getCompanies(true)); // Include archived for internal filtering
+  // Refresh lists with Cloud Sync
+  const refreshData = async () => {
+    setIsSyncing(true);
+    try {
+      const syncedCompanies = await GembaDB.syncCompaniesFromCloud();
+      setCompanies(syncedCompanies);
+      setStats(GembaDB.getDashboardStats());
+    } catch (e) {
+      setCompanies(GembaDB.getCompanies(true));
+      setStats(GembaDB.getDashboardStats());
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
   useEffect(() => {
@@ -153,13 +169,49 @@ export default function Dashboard({ onOpenCompany, onNewCompanyCreated }: Dashbo
             </p>
           </div>
 
-          <button
-            onClick={() => setIsNewFormOpen(!isNewFormOpen)}
-            className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs px-5 py-3 rounded-2xl transition-all shadow-md hover:scale-[1.02] active:scale-[0.98] cursor-pointer self-stretch md:self-auto text-center justify-center"
-          >
-            <Plus className="w-4.5 h-4.5 stroke-[3]" />
-            YENİ FİRMA ANALİZİ BAŞLAT
-          </button>
+          <div className="flex flex-wrap items-center gap-3 self-stretch md:self-auto">
+            <button
+              onClick={() => refreshData()}
+              disabled={isSyncing}
+              className={`flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-extrabold text-xs px-4 py-3 rounded-2xl transition-all border border-slate-700/80 cursor-pointer ${
+                isSyncing ? 'opacity-75 cursor-wait' : ''
+              }`}
+              title="Bulut Veritabanından Son Verileri Çek"
+            >
+              <RefreshCw className={`w-4 h-4 text-emerald-400 ${isSyncing ? 'animate-spin' : ''}`} />
+              <span>{isSyncing ? 'Senkronize Ediliyor...' : 'Yenile / Buluttan Çek'}</span>
+            </button>
+
+            <button
+              onClick={() => setIsDbModalOpen(true)}
+              className={`flex items-center gap-2 font-extrabold text-xs px-4 py-3 rounded-2xl transition-all border cursor-pointer ${
+                dbConfig.isConfigured
+                  ? 'bg-emerald-950/60 text-emerald-300 border-emerald-500/40 hover:bg-emerald-900/80'
+                  : 'bg-amber-950/60 text-amber-300 border-amber-500/40 hover:bg-amber-900/80'
+              }`}
+              title="Supabase Bulut Veritabanı Ayarları"
+            >
+              {dbConfig.isConfigured ? (
+                <>
+                  <Cloud className="w-4 h-4 text-emerald-400 animate-pulse" />
+                  <span>☁️ Bulut Senkronize</span>
+                </>
+              ) : (
+                <>
+                  <CloudOff className="w-4 h-4 text-amber-400" />
+                  <span>⚙️ Veritabanı Ayarı</span>
+                </>
+              )}
+            </button>
+
+            <button
+              onClick={() => setIsNewFormOpen(!isNewFormOpen)}
+              className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs px-5 py-3 rounded-2xl transition-all shadow-md hover:scale-[1.02] active:scale-[0.98] cursor-pointer text-center justify-center"
+            >
+              <Plus className="w-4.5 h-4.5 stroke-[3]" />
+              YENİ FİRMA ANALİZİ BAŞLAT
+            </button>
+          </div>
         </div>
 
         {/* BENTO-GRID STATS */}
@@ -550,6 +602,92 @@ export default function Dashboard({ onOpenCompany, onNewCompanyCreated }: Dashbo
           )}
         </div>
       </div>
+
+      {/* ─── SUPABASE DATABASE CONFIGURATION MODAL ─── */}
+      {isDbModalOpen && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[99999] flex items-center justify-center p-4 animate-fade-in no-print">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-slate-200 relative space-y-5">
+            <button 
+              onClick={() => setIsDbModalOpen(false)}
+              className="absolute top-5 right-5 p-2 bg-slate-100 hover:bg-red-50 text-slate-400 hover:text-red-600 rounded-full transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+              <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl">
+                <Database className="w-6 h-6" />
+              </div>
+              <div>
+                <h4 className="font-display font-black text-slate-900 text-base">Supabase Bulut Veritabanı Ayarları</h4>
+                <p className="text-xs text-slate-500 font-semibold">Tablet ve Bilgisayar Eş Zamanlı Müşteri Senkronizasyonu</p>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-600 leading-relaxed font-medium">
+              PC ve Tablet cihazlarınızın aynı veritabanına bağlanıp müşterileri eş zamanlı görebilmesi için Supabase proje bağlantı bilgilerinizi buraya girebilirsiniz:
+            </p>
+
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              saveSupabaseCredentials(dbUrl, dbKey);
+              const newCfg = getSupabaseConfig();
+              setDbConfig(newCfg);
+              setIsDbModalOpen(false);
+              refreshData();
+              alert(newCfg.isConfigured ? 'Supabase bulut bağlantısı başarıyla güncellendi ve cihazlar arası senkronizasyon aktifleştirildi!' : 'Veritabanı bilgileri temizlendi.');
+            }} className="space-y-4 pt-1">
+
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                  Supabase Project URL
+                </label>
+                <input 
+                  type="text"
+                  value={dbUrl}
+                  onChange={e => setDbUrl(e.target.value)}
+                  placeholder="https://xxxxxxxxxxxx.supabase.co"
+                  className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                  Supabase Anon Public Key
+                </label>
+                <textarea 
+                  value={dbKey}
+                  onChange={e => setDbKey(e.target.value)}
+                  placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6..."
+                  rows={3}
+                  className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 font-mono leading-relaxed focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
+                />
+              </div>
+
+              <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-[11px] text-slate-600 space-y-1">
+                <span className="font-bold text-slate-900 block">💡 İpucu:</span>
+                <p>Bu bilgileri <strong>Vercel Environment Variables</strong> alanına (<code>VITE_SUPABASE_URL</code> ve <code>VITE_SUPABASE_ANON_KEY</code>) eklediğinizde tüm tablet ve bilgisayarlar otomatik bağlanır.</p>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsDbModalOpen(false)}
+                  className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-5 py-2.5 rounded-xl cursor-pointer"
+                >
+                  İptal
+                </button>
+                <button
+                  type="submit"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs px-5 py-2.5 rounded-xl transition-all shadow-md cursor-pointer"
+                >
+                  Kaydet ve Bağlan
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

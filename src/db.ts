@@ -1,6 +1,6 @@
 // Gemba QLA Relational Hybrid Local & Supabase Cloud Database
 // Implements a normalized relational structure linked by CompanyID (Foreign Key)
-import { supabase, isSupabaseConfigured } from './lib/supabase';
+import { getSupabase, isSupabaseConfigured, saveSupabaseCredentials, getSupabaseConfig } from './lib/supabase';
 
 export interface Company {
   companyId: string; // UUID
@@ -309,7 +309,7 @@ export function seedInitialDatabase() {
 
 // Database Operations
 export const GembaDB = {
-  // Get all companies
+  // Get all companies from local storage
   getCompanies(includeArchived: boolean = false): Company[] {
     seedInitialDatabase();
     try {
@@ -326,7 +326,133 @@ export const GembaDB = {
     }
   },
 
-  // Save/Update a company record only
+  // ─── BI-DIRECTIONAL CLOUD SYNC METHODS FOR TABLET & PC ───
+  async syncCompaniesFromCloud(): Promise<Company[]> {
+    seedInitialDatabase();
+    const client = getSupabase();
+    if (!client) return this.getCompanies(true);
+
+    try {
+      const { data, error } = await client
+        .from('companies')
+        .select('*')
+        .order('updated_at', { ascending: false });
+
+      if (error) {
+        console.warn('[Supabase Cloud Sync Error]', error.message);
+        return this.getCompanies(true);
+      }
+
+      if (data && Array.isArray(data) && data.length > 0) {
+        const localCompanies = this.getCompanies(true);
+        const cloudCompanies: Company[] = data.map((row: any) => ({
+          companyId: row.company_id,
+          companyName: row.company_name,
+          sector: row.sector || 'Genel İmalat',
+          location: row.location || '',
+          consultant: row.consultant || '',
+          visitDate: row.visit_date || new Date().toISOString().split('T')[0],
+          status: row.status || 'Active',
+          createdDate: row.created_at || new Date().toISOString(),
+          updatedDate: row.updated_at || new Date().toISOString()
+        }));
+
+        const mergedMap = new Map<string, Company>();
+        localCompanies.forEach(c => mergedMap.set(c.companyId, c));
+        cloudCompanies.forEach(c => mergedMap.set(c.companyId, c));
+
+        const mergedList = Array.from(mergedMap.values());
+        localStorage.setItem(KEYS.COMPANIES, JSON.stringify(mergedList));
+        return mergedList;
+      }
+    } catch (e) {
+      console.warn('[Supabase Fetch Exception]', e);
+    }
+
+    return this.getCompanies(true);
+  },
+
+  async syncCompanyDetailsFromCloud(companyId: string): Promise<boolean> {
+    const client = getSupabase();
+    if (!client || !companyId) return false;
+
+    try {
+      // 1. Operation Data & JSON state
+      const { data: opData } = await client
+        .from('operation_data')
+        .select('*')
+        .eq('company_id', companyId)
+        .maybeSingle();
+
+      if (opData && opData.data_json) {
+        const operations: OperationData[] = JSON.parse(localStorage.getItem(KEYS.OPERATIONS) || '[]');
+        const idx = operations.findIndex(o => o.companyId === companyId);
+        const fullOp = { ...opData.data_json, companyId };
+        if (idx > -1) {
+          operations[idx] = fullOp;
+        } else {
+          operations.push(fullOp);
+        }
+        localStorage.setItem(KEYS.OPERATIONS, JSON.stringify(operations));
+      }
+
+      // 2. Assessments
+      const { data: asData } = await client
+        .from('assessments')
+        .select('*')
+        .eq('company_id', companyId)
+        .maybeSingle();
+
+      if (asData) {
+        const assessments: Assessment[] = JSON.parse(localStorage.getItem(KEYS.ASSESSMENTS) || '[]');
+        const idx = assessments.findIndex(a => a.companyId === companyId);
+        const mapped: Assessment = {
+          assessmentId: asData.assessment_id || generateUUID(),
+          companyId,
+          overallScore: asData.overall_score || 0,
+          potentialSaving: asData.potential_saving || 0,
+          investmentNeed: asData.investment_need || 0,
+          paybackPeriod: asData.payback_period || 0,
+          notes: asData.notes || '',
+          createdDate: asData.created_at || new Date().toISOString()
+        };
+        if (idx > -1) assessments[idx] = mapped;
+        else assessments.push(mapped);
+        localStorage.setItem(KEYS.ASSESSMENTS, JSON.stringify(assessments));
+      }
+
+      // 3. Observations
+      const { data: obsData } = await client
+        .from('observations')
+        .select('*')
+        .eq('company_id', companyId);
+
+      if (obsData && Array.isArray(obsData)) {
+        const allObs: Observation[] = JSON.parse(localStorage.getItem(KEYS.OBSERVATIONS) || '[]');
+        const otherObs = allObs.filter(o => o.companyId !== companyId);
+        const fetchedObs: Observation[] = obsData.map((row: any) => ({
+          observationId: row.observation_id,
+          companyId: row.company_id,
+          category: row.category || 'Genel',
+          finding: row.finding || '',
+          improvement: row.improvement || '',
+          priority: row.priority || 'Orta',
+          impact: row.impact || 'Orta',
+          photo: row.photo || undefined,
+          createdDate: row.created_at || new Date().toISOString()
+        }));
+        otherObs.push(...fetchedObs);
+        localStorage.setItem(KEYS.OBSERVATIONS, JSON.stringify(otherObs));
+      }
+
+      return true;
+    } catch (e) {
+      console.warn('[Cloud Sync Details Exception]', e);
+      return false;
+    }
+  },
+
+  // Save/Update a company record
   saveCompanyRecord(company: Company): void {
     try {
       const companies = this.getCompanies(true);
@@ -338,8 +464,9 @@ export const GembaDB = {
       }
       localStorage.setItem(KEYS.COMPANIES, JSON.stringify(companies));
 
-      if (isSupabaseConfigured && supabase) {
-        supabase.from('companies').upsert({
+      const client = getSupabase();
+      if (client) {
+        client.from('companies').upsert({
           company_id: company.companyId,
           company_name: company.companyName,
           sector: company.sector,
@@ -349,7 +476,7 @@ export const GembaDB = {
           status: company.status,
           updated_at: new Date().toISOString()
         }).then(({ error }) => {
-          if (error) console.warn('[Supabase Sync] Error syncing company:', error);
+          if (error) console.warn('[Supabase Sync Company Error]', error.message);
         });
       }
     } catch (e) {
@@ -393,7 +520,7 @@ export const GembaDB = {
     }
   },
 
-  // Create new blank company
+  // Create new company
   createCompany(companyName: string, sector: string = 'Genel İmalat', location: string = '', consultant: string = ''): Company {
     const companyId = generateUUID();
     const now = new Date().toISOString();
@@ -474,7 +601,7 @@ export const GembaDB = {
       ],
     };
 
-    // Save
+    // Save locally
     this.saveCompanyRecord(newCompany);
 
     const assessments: Assessment[] = JSON.parse(localStorage.getItem(KEYS.ASSESSMENTS) || '[]');
@@ -485,10 +612,31 @@ export const GembaDB = {
     operations.push(newOperation);
     localStorage.setItem(KEYS.OPERATIONS, JSON.stringify(operations));
 
+    // Save to Cloud
+    const client = getSupabase();
+    if (client) {
+      client.from('operation_data').upsert({
+        company_id: companyId,
+        turnover_lira: newOperation.turnoverLira,
+        copq_rate: newOperation.copqRate,
+        oee: newOperation.oee,
+        scrap_rate: newOperation.scrapRate,
+        rework_rate: newOperation.reworkRate,
+        overtime_rate: newOperation.overtimeRate,
+        lead_time: newOperation.leadTime,
+        covered_area: newOperation.coveredArea,
+        operators_count: newOperation.operatorsCount,
+        data_json: newOperation,
+        created_at: now
+      }).then(({ error }) => {
+        if (error) console.warn('[Supabase Create Company Error]', error.message);
+      });
+    }
+
     return newCompany;
   },
 
-  // Save full state of loaded company
+  // Save full state of loaded company (Local + Supabase Cloud)
   saveFullState(
     companyId: string,
     companyFields: Partial<Company>,
@@ -583,8 +731,80 @@ export const GembaDB = {
       }
       localStorage.setItem(KEYS.ASSESSMENTS, JSON.stringify(assessments));
 
+      // 4. Cloud Sync to Supabase
+      const client = getSupabase();
+      if (client) {
+        // Company
+        client.from('companies').upsert({
+          company_id: companyId,
+          company_name: companyFields.companyName || (cIdx > -1 ? companies[cIdx].companyName : 'Saha Çalışması'),
+          sector: companyFields.sector || (cIdx > -1 ? companies[cIdx].sector : 'Genel İmalat'),
+          location: companyFields.location || (cIdx > -1 ? companies[cIdx].location : ''),
+          consultant: companyFields.consultant || (cIdx > -1 ? companies[cIdx].consultant : ''),
+          visit_date: companyFields.visitDate || (cIdx > -1 ? companies[cIdx].visitDate : now.split('T')[0]),
+          status: companyFields.status || (cIdx > -1 ? companies[cIdx].status : 'Active'),
+          updated_at: now
+        }).then(({ error }) => {
+          if (error) console.warn('[Supabase Sync FullState Company Error]', error.message);
+        });
+
+        // Operation Data
+        client.from('operation_data').upsert({
+          company_id: companyId,
+          turnover_lira: updatedOp.turnoverLira,
+          copq_rate: updatedOp.copqRate,
+          oee: updatedOp.oee,
+          scrap_rate: updatedOp.scrapRate,
+          rework_rate: updatedOp.reworkRate,
+          overtime_rate: updatedOp.overtimeRate,
+          lead_time: updatedOp.leadTime,
+          covered_area: updatedOp.coveredArea,
+          operators_count: updatedOp.operatorsCount,
+          data_json: updatedOp,
+          created_at: now
+        }).then(({ error }) => {
+          if (error) console.warn('[Supabase Sync FullState Operation Error]', error.message);
+        });
+
+        // Assessment
+        client.from('assessments').upsert({
+          assessment_id: updatedAs.assessmentId,
+          company_id: companyId,
+          overall_score: updatedAs.overallScore,
+          potential_saving: updatedAs.potentialSaving,
+          investment_need: updatedAs.investmentNeed,
+          payback_period: updatedAs.paybackPeriod,
+          notes: updatedAs.notes,
+          created_at: updatedAs.createdDate
+        }).then(({ error }) => {
+          if (error) console.warn('[Supabase Sync FullState Assessment Error]', error.message);
+        });
+      }
+
     } catch (e) {
       console.error('Error saving full state', e);
+    }
+  },
+
+  // Delete company completely (Local + Cloud)
+  deleteCompany(companyId: string): void {
+    const companies = this.getCompanies(true).filter(c => c.companyId !== companyId);
+    localStorage.setItem(KEYS.COMPANIES, JSON.stringify(companies));
+
+    const assessments: Assessment[] = JSON.parse(localStorage.getItem(KEYS.ASSESSMENTS) || '[]');
+    localStorage.setItem(KEYS.ASSESSMENTS, JSON.stringify(assessments.filter(a => a.companyId !== companyId)));
+
+    const operations: OperationData[] = JSON.parse(localStorage.getItem(KEYS.OPERATIONS) || '[]');
+    localStorage.setItem(KEYS.OPERATIONS, JSON.stringify(operations.filter(o => o.companyId !== companyId)));
+
+    const observations: Observation[] = JSON.parse(localStorage.getItem(KEYS.OBSERVATIONS) || '[]');
+    localStorage.setItem(KEYS.OBSERVATIONS, JSON.stringify(observations.filter(o => o.companyId !== companyId)));
+
+    const client = getSupabase();
+    if (client) {
+      client.from('companies').delete().eq('company_id', companyId).then(({ error }) => {
+        if (error) console.warn('[Supabase Delete Company Error]', error.message);
+      });
     }
   },
 
@@ -595,7 +815,7 @@ export const GembaDB = {
     if (idx > -1) {
       companies[idx].status = 'Archived';
       companies[idx].updatedDate = new Date().toISOString();
-      localStorage.setItem(KEYS.COMPANIES, JSON.stringify(companies));
+      this.saveCompanyRecord(companies[idx]);
     }
   },
 
@@ -606,7 +826,7 @@ export const GembaDB = {
     if (idx > -1) {
       companies[idx].status = 'Active';
       companies[idx].updatedDate = new Date().toISOString();
-      localStorage.setItem(KEYS.COMPANIES, JSON.stringify(companies));
+      this.saveCompanyRecord(companies[idx]);
     }
   },
 
@@ -620,7 +840,6 @@ export const GembaDB = {
       const now = new Date().toISOString();
       const visitDate = now.split('T')[0];
 
-      // 1. Copy Company
       const newCompany: Company = {
         ...sourceData.company,
         companyId: newId,
@@ -631,7 +850,6 @@ export const GembaDB = {
         updatedDate: now,
       };
 
-      // 2. Copy Assessment
       const newAssessment: Assessment = sourceData.assessment ? {
         ...sourceData.assessment,
         assessmentId: generateUUID(),
@@ -648,7 +866,6 @@ export const GembaDB = {
         createdDate: now,
       };
 
-      // 3. Copy OperationData
       const newOperation: OperationData = sourceData.operation ? {
         ...sourceData.operation,
         companyId: newId,
@@ -689,7 +906,6 @@ export const GembaDB = {
         chatMessages: [],
       };
 
-      // 4. Copy Observations
       const allObservations: Observation[] = JSON.parse(localStorage.getItem(KEYS.OBSERVATIONS) || '[]');
       const newObservations = sourceData.observations.map(obs => ({
         ...obs,
@@ -698,33 +914,10 @@ export const GembaDB = {
         createdDate: now,
       }));
 
-      // 5. Copy Savings
-      const allSavings: SavingResult[] = JSON.parse(localStorage.getItem(KEYS.SAVINGS) || '[]');
-      const newSavings = sourceData.savings.map(sav => ({
-        ...sav,
-        savingId: generateUUID(),
-        companyId: newId,
-        createdDate: now,
-      }));
-
-      // Save all back to localStorage
-      const companies = this.getCompanies(true);
-      companies.push(newCompany);
-      localStorage.setItem(KEYS.COMPANIES, JSON.stringify(companies));
-
-      const assessments: Assessment[] = JSON.parse(localStorage.getItem(KEYS.ASSESSMENTS) || '[]');
-      assessments.push(newAssessment);
-      localStorage.setItem(KEYS.ASSESSMENTS, JSON.stringify(assessments));
-
-      const operations: OperationData[] = JSON.parse(localStorage.getItem(KEYS.OPERATIONS) || '[]');
-      operations.push(newOperation);
-      localStorage.setItem(KEYS.OPERATIONS, JSON.stringify(operations));
+      this.saveFullState(newId, newCompany, newOperation, newAssessment);
 
       allObservations.push(...newObservations);
       localStorage.setItem(KEYS.OBSERVATIONS, JSON.stringify(allObservations));
-
-      allSavings.push(...newSavings);
-      localStorage.setItem(KEYS.SAVINGS, JSON.stringify(allSavings));
 
       return newCompany;
     } catch (e) {
@@ -760,6 +953,23 @@ export const GembaDB = {
     const observations: Observation[] = JSON.parse(localStorage.getItem(KEYS.OBSERVATIONS) || '[]');
     observations.push(newObs);
     localStorage.setItem(KEYS.OBSERVATIONS, JSON.stringify(observations));
+
+    const client = getSupabase();
+    if (client) {
+      client.from('observations').upsert({
+        observation_id: newObs.observationId,
+        company_id: companyId,
+        category: newObs.category,
+        finding: newObs.finding,
+        improvement: newObs.improvement,
+        priority: newObs.priority,
+        impact: newObs.impact,
+        created_at: now
+      }).then(({ error }) => {
+        if (error) console.warn('[Supabase Add Obs Error]', error.message);
+      });
+    }
+
     return newObs;
   },
 
@@ -769,6 +979,20 @@ export const GembaDB = {
     if (idx > -1) {
       observations[idx] = observation;
       localStorage.setItem(KEYS.OBSERVATIONS, JSON.stringify(observations));
+
+      const client = getSupabase();
+      if (client) {
+        client.from('observations').upsert({
+          observation_id: observation.observationId,
+          company_id: observation.companyId,
+          category: observation.category,
+          finding: observation.finding,
+          improvement: observation.improvement,
+          priority: observation.priority,
+          impact: observation.impact,
+          created_at: observation.createdDate
+        });
+      }
     }
   },
 
@@ -776,23 +1000,11 @@ export const GembaDB = {
     const observations: Observation[] = JSON.parse(localStorage.getItem(KEYS.OBSERVATIONS) || '[]');
     const filtered = observations.filter(o => o.observationId !== observationId);
     localStorage.setItem(KEYS.OBSERVATIONS, JSON.stringify(filtered));
-  },
 
-  // Savings CRUD operations
-  getSavings(companyId: string): SavingResult[] {
-    try {
-      const savings: SavingResult[] = JSON.parse(localStorage.getItem(KEYS.SAVINGS) || '[]');
-      return savings.filter(s => s.companyId === companyId);
-    } catch (e) {
-      return [];
+    const client = getSupabase();
+    if (client) {
+      client.from('observations').delete().eq('observation_id', observationId);
     }
-  },
-
-  saveSavings(companyId: string, savingsList: SavingResult[]): void {
-    const allSavings: SavingResult[] = JSON.parse(localStorage.getItem(KEYS.SAVINGS) || '[]');
-    const filtered = allSavings.filter(s => s.companyId !== companyId);
-    filtered.push(...savingsList);
-    localStorage.setItem(KEYS.SAVINGS, JSON.stringify(filtered));
   },
 
   // Dashboard Stats Calculations
@@ -808,11 +1020,8 @@ export const GembaDB = {
     const assessments: Assessment[] = JSON.parse(localStorage.getItem(KEYS.ASSESSMENTS) || '[]');
 
     const activeCompanies = companies.filter(c => c.status !== 'Archived');
-    
-    // Total visits is count of active companies with non-empty visit dates
     const totalVisits = activeCompanies.filter(c => c.visitDate).length;
 
-    // Total potential savings is sum of potentialSaving in active assessments
     let totalPotentialSaving = 0;
     let scoreSum = 0;
     let scoredCount = 0;
@@ -830,7 +1039,6 @@ export const GembaDB = {
 
     const averageLeanScore = scoredCount > 0 ? Math.round(scoreSum / scoredCount) : 0;
 
-    // This month visits
     const startOfMonth = new Date();
     startOfMonth.setDate(1);
     startOfMonth.setHours(0, 0, 0, 0);
@@ -838,7 +1046,6 @@ export const GembaDB = {
 
     const thisMonthVisits = activeCompanies.filter(c => c.visitDate && c.visitDate.startsWith(thisMonthStr)).length;
 
-    // Recent companies sorted by updatedDate
     const recentCompanies = [...companies]
       .sort((a, b) => new Date(b.updatedDate).getTime() - new Date(a.updatedDate).getTime())
       .slice(0, 5);

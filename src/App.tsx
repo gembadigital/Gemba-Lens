@@ -339,8 +339,12 @@ export default function App() {
   // Tab control state
   const [activeTab, setActiveTab] = useState<'scoring' | 'financial' | 'roi'>(() => (localStorage.getItem('gp_activeTab') as 'scoring' | 'financial' | 'roi') || 'scoring');
 
-  // Load Company from database function
-  const loadCompany = (companyId: string) => {
+  // Load Company from database function with Cloud Sync
+  const loadCompany = async (companyId: string) => {
+    try {
+      await GembaDB.syncCompanyDetailsFromCloud(companyId);
+    } catch (e) {}
+
     const details = GembaDB.getCompanyDetails(companyId);
     if (!details) return;
 
