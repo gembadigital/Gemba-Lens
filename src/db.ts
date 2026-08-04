@@ -1007,6 +1007,44 @@ export const GembaDB = {
     }
   },
 
+  // Savings CRUD operations
+  getSavings(companyId: string): SavingResult[] {
+    try {
+      const savings: SavingResult[] = JSON.parse(localStorage.getItem(KEYS.SAVINGS) || '[]');
+      return savings.filter(s => s.companyId === companyId);
+    } catch (e) {
+      return [];
+    }
+  },
+
+  saveSavings(companyId: string, savingsList: SavingResult[]): void {
+    try {
+      const allSavings: SavingResult[] = JSON.parse(localStorage.getItem(KEYS.SAVINGS) || '[]');
+      const filtered = allSavings.filter(s => s.companyId !== companyId);
+      filtered.push(...savingsList);
+      localStorage.setItem(KEYS.SAVINGS, JSON.stringify(filtered));
+
+      const client = getSupabase();
+      if (client && savingsList.length > 0) {
+        client.from('proposals').upsert(savingsList.map(s => ({
+          proposal_id: s.savingId,
+          company_id: companyId,
+          selected_option: s.savingType,
+          budget_try: s.currentCost,
+          annual_gain_min: s.annualSaving,
+          annual_gain_max: s.futureCost,
+          roi_min: s.roi,
+          roi_max: s.payback,
+          created_at: s.createdDate || new Date().toISOString()
+        }))).then(({ error }) => {
+          if (error) console.warn('[Supabase Sync Proposals Error]', error.message);
+        });
+      }
+    } catch (e) {
+      console.error('Error saving savings', e);
+    }
+  },
+
   // Dashboard Stats Calculations
   getDashboardStats(): {
     totalCompanies: number;
