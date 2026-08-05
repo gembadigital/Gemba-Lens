@@ -300,57 +300,71 @@ ${sec} sektöründeki tesisinizde yapılan ön analizde, yıllık cironuzun yakl
   function getDeterministicChatResponse(userMsg: string): string {
     const msg = userMsg.toLowerCase().trim();
 
-    if (msg.includes("fiyat") || msg.includes("bütçe") || msg.includes("maliyet") || msg.includes("pahalı") || msg.includes("itiraz") || msg.includes("ikna")) {
-      return `### 💡 Danışmanlık Bütçesi ve ROI Geri Dönüş Analizi (Sales Executive Perspektifi)
+    // 1. Fabrika Olgunluk & Ürün Maliyet Yapısı Değerlendirmesi
+    if (msg.includes("olgunluk") || msg.includes("maliyet yapısı") || msg.includes("fabrika olgunluk")) {
+      return `### 🏭 Fabrika Olgunluk Seviyesi (Lean Maturity) & Ürün Maliyet Yapısı Analizi
 
-Sayın Yöneticim, Danışmanlık yatırımını bir **"maliyet"** olarak değil, tesisinizdeki masada bırakılan kayıpları kâra dönüştüren bir **"yüksek getirili finansal yatırım"** olarak konumlandırıyoruz.
+Saha değerlendirmemize göre tesisinizin operasyonel olgunluğu **Level 2 (Reaktif / Departmansal Yönetim)** ile **Level 3 (Standartlaştırılmış Süreçler)** arasında yer almaktadır.
 
-**Ana Satış Argümanlarımız:**
-1. **Çarpan Etkisi:** Önerdiğimiz 104 adam-günlük dönüşüm programı, tesisinizdeki yıllık kayıp havuzunun en az %10-15'ini (yaklaşık 1.5 - 3.5 Milyon TL) doğrudan şirket kâr hanenize geri kazandırmaktadır.
-2. **Geri Ödeme Süresi (Payback):** Danışmanlık projemiz kendi maliyetini ortalama **2 ila 4 ay içinde** amorti etmekte, kalan 8 ay tamamen şirketinize net kâr kalmaktadır.
-3. **Sürdürülebilirlik:** Danışmanlık sona erdiğinde dışarıdan bağımlı kalmazsınız; ekibiniz kendi Kaizen projelerini yürütecek yetkinliğe ulaşır.
-
-*Gelin 2 günlük Gemba Ön Değerlendirme (Loss Assessment) çalışmasıyla bu rakamları sahanızda birlikte doğrulayalım.*`;
-    }
-
-    if (msg.includes("olgunluk") || msg.includes("assessment") || msg.includes("yapı") || msg.includes("seviye")) {
-      return `### 🏭 Fabrika Olgunluk Seviyesi ve Gelişim Yol Haritası
-
-Saha değerlendirmemizde tesisinizin mevcut operasyonel olgunluk seviyesi **Level 2 (Reaktif Yönetim)** ile **Level 3 (Standartlaştırılmış Yönetim)** arasında tespit edilmiştir.
-
-**Olgunluk Dönüşüm Stratejisi:**
-- **Mevcut Durum:** Kök neden analizi eksikliği ve model değişimlerinde zaman kaybı nedeniyle OEE %55-60 bandında kısıtlanmıştır.
-- **Faz 1 Hedefi:** 5S, Görsel Yönetim ve Standart İş ile olgunluk seviyenizi **Level 3+ (Süreç Kontrolü)** seviyesine çıkararak kayıpların ilk %10'luk bölümünü kâra çevirmek.
-- **Faz 2 Hedefi:** Sürekli Akış, TPM ve Dijital OEE takibi ile tesisinizi **Level 4 (Mükemmel Akış)** seviyesine taşımak.`;
-    }
-
-    if (msg.includes("ürün maliyet") || msg.includes("dağılım") || msg.includes("hammadde") || msg.includes("işçilik")) {
-      return `### 📊 Sektörel Ürün Maliyet Modeli ve Kayıp Etki Analizi
-
-Tesisinizde üretilen odak ürün grubu için imalat sanayi benchmarklarına göre tipik maliyet yapısı şu şekildedir:
-- **Direkt Malzeme / Hammadde:** %50 - %55
-- **Direkt İşçilik:** %18 - %22
-- **Enerji ve Bakım Giderleri:** %10 - %12
-- **Genel Üretim / Amortisman Giderleri:** %10 - %12
+**1. Tesis Sektörel Ürün Maliyet Yapısı Breakdown:**
+- **Direkt Malzeme / Hammadde:** %50 - %55 (En yüksek finansal hassasiyet alanı)
+- **Direkt İşçilik:** %18 - %22 (Verimsizlik ve fazla mesai yükünün bindiği alan)
+- **Enerji ve Bakım Giderleri:** %10 - %12 (Duruş ve arıza kayıpları)
+- **Genel Üretim / Amortisman:** %10 - %12
 - **Hedef Operasyonel Kâr Marjı:** %8 - %12
 
-**Stratejik Fırsat:**
-Cironuzun %10'u seviyesindeki COPQ (Kalitesizlik Maliyeti) kayıpları doğrudan **Direkt İşçilik ve Genel Üretim Giderleri** marjınızı aşındırmaktadır. Yapacağımız 5S, SMED ve Hat Dengeleme çalışmaları ile bu giderlerdeki %15-20'lik verimsizlik azaltılarak doğrudan net kâr marjınız 3-4 puan artırılacaktır.`;
+**2. Olgunluk Dönüşüm ve Gelişim Yol Haritası:**
+- **Faz 1 (Görsel & Standart İş - Level 3):** 5S, Görsel Yönetim ve Standart İş Talimatları ile kalitesizlik ve hurda kayıplarının ilk %15'ini kâra çevirmek.
+- **Faz 2 (Kapasite & SMED - Level 4):** Model değişim sürelerini %50 kısaltarak makine kullanılabilirliğini (OEE) %70+ seviyesine yükseltmek.
+- **Faz 3 (Sürekli Akış & Yalın Kültür):** Tesisinizde kendi kayıplarını otonom olarak tespit edip çözen yetkin ekipler kurmak.`;
     }
 
-    if (msg.includes("kaizen") || msg.includes("insan") || msg.includes("yetkinlik") || msg.includes("kültür") || msg.includes("ekip")) {
-      return `### 🤝 Sürdürülebilir Kaizen ve İç Yetkinlik Dönüşümü
+    // 2. Fiyat / Bütçe İtirazı İkna Rehberi
+    if (msg.includes("fiyat") || msg.includes("bütçe") || msg.includes("itiraz") || msg.includes("ikna") || msg.includes("pahalı")) {
+      return `### 💰 Fiyat / Bütçe İtirazlarını Yönetme & Finansal ROI İkna Rehberi (Sales Script)
 
-Danışmanlığımızın en kıymetli ve kalıcı çıktısı, **"şirketinizin kendi içinde sürekli kayıp bulabilen ve problem çözebilen insan kaynağını yetiştirmektir."**
+Müşteri **"Danışmanlık bütçemiz yok"** veya **"Danışmanlık fiyatınız çok yüksek"** dediğinde kullanılacak satış kapanış ikna metodolojisi:
+
+**1. Eylemsizlik Maliyeti (Cost of Inaction):**
+> *"Sayın Yöneticim, bu danışmanlık projesini almadığınız her ay, tesisinizde tespit ettiğimiz yaklaşık kayıp masada kalmaya ve kâr marjınızı eritmeye devam ediyor. Bizim danışmanlık bütçemiz, masadaki bu kaybın yanında sadece %5-10 seviyesindedir."*
+
+**2. Finansal Amortisman Garantisi (Payback 2-4 Ay):**
+> *"Projemiz bir maliyet kalemi değil, kendini ortalama **2 ila 4 ay içinde** amorti eden yüksek getirili bir yatırımdır. Yılın kalan 8-10 ayında sağlanan tüm tasarruf doğrudan net kâr hanenize kalmaktadır."*
+
+**3. Risk-Free Satış Kapanış Teklifi:**
+> *"Gelin 2 günlük Gemba Loss Assessment ile sahada bu kayıpları birlikte doğrulayalım, ROI garantili 30-60-90 günlük ilk hızlı kazanım planını netleştirelim."*`;
+    }
+
+    // 3. Kapanış & Satış Strateji Raporu
+    if (msg.includes("kapanış") || msg.includes("satış strateji") || msg.includes("rapor")) {
+      return `### 📊 Gemba QLA — Satış Kapanış & Yönetim Sunumu Strateji Raporu
+
+**1. Yönetim Özeti:**
+- **Analiz Edilen Tesis:** Operasyonel Saha Loss Assessment Raporu
+- **Tespit Edilen Yıllık Kayıp Havuzu:** Toplam Cironun yaklaşık %10 - %15'i
+- **Önerilen Ana Program:** PROGRAM 02 — Hızlandırılmış Dönüşüm Programı (104 Adam-Gün)
+- **Beklenen Yıllık Net Kazanım:** Yatırılan Bütçenin 5x - 8x Katı Finansal Getiri
+
+**2. C-Level Kapanış Adımları:**
+1. Danışmanlık kapsamını ve 30-60-90 günlük hızlı geri kazanım planını onaylamak.
+2. Saha Kaizen Liderlerini belirleyerek Gemba Ön İnceleme tarihini sabitlemek.`;
+    }
+
+    // 4. Kaizen & İç Yetkinlik
+    if (msg.includes("kaizen") || msg.includes("insan") || msg.includes("yetkinlik") || msg.includes("kültür") || msg.includes("ekip")) {
+      return `### 🤝 Kaizen İç Yetkinlik Dönüşümü & İnsan Kaynağı Kazanımı
+
+Danışmanlığımızın en stratejik farkı, dışarıdan rapor sunup giden bir Danışmanlık değil, **"şirketinizin kendi içinde sürekli kayıp bulabilen ve problem çözebilen insan kaynağını yetiştirmektir."**
 
 **İç Yetkinlik Kazanım Modeli:**
-1. **Saha Koçluğu (Gemba Coaching):** Danışmanlarımız sadece rapor yazmaz; sahadaki mühendis ve ustabaşılarınızla birlikte Kaizen projeleri yürütür.
-2. **A3 Problem Çözme Disiplini:** Ekibinize kronik arıza ve kalite hatalarını kökünden çözecek metodoloji kazandırılır.
-3. **Kaizen Liderleri Havuzu:** Proje sonunda tesisinizde en az 5 ila 8 sertifikalı **İç Yalın Lider** yetişmiş olur.
+1. **Saha Koçluğu (Gemba Coaching):** Danışmanlarımız sahadaki mühendis ve ustabaşılarınızla omuz omuza Kaizen projeleri yürütür.
+2. **A3 Problem Çözme Disiplini:** Kronik arızaları ve kalite hatalarını kökünden çözecek metodoloji kazandırılır.
+3. **İç Kaizen Liderleri Havuzu:** Proje sonunda tesisinizde en az 5 ila 8 sertifikalı **İç Yalın Lider** yetişmiş olur.
 
 *"Biz müşterimizin problemlerini sürekli çözmek istemiyoruz; müşterimizin kendi problemlerini kendi çözen bir organizasyona dönüşmesini sağlıyoruz."*`;
     }
 
+    // 5. SMED / Setup
     if (msg.includes("smed") || msg.includes("setup") || msg.includes("model") || msg.includes("kalıp") || msg.includes("duruş")) {
       return `### ⚡ SMED ile Model Değişim Sürelerini %50+ Kısaltma Stratejisi
 
@@ -362,10 +376,11 @@ Tesisinizde tespit edilen en büyük gizli kayıp kalemi, model ve kalıp deği�
 3. **Kazanım:** Setup süreleri 45 dakikadan 18 dakikaya düşürülerek makine kullanılabilirliği (OEE Availability) %8 artırılacak, açığa çıkan kapasite doğrudan ciroya dönüşecektir.`;
     }
 
+    // 6. OEE & COPQ
     if (msg.includes("oee") || msg.includes("verim") || msg.includes("hurda") || msg.includes("kalite") || msg.includes("fire")) {
       return `### 📈 OEE ve Kalitesizlik (COPQ) İyileştirme Modeli
 
-Mevcut OEE seviyeniz (%58) dünya standartlarının (%85 OEE) gerisindedir. Bu durum cironuzun yaklaşık %10'unun (COPQ) masada kalmasına neden olmaktadır.
+Mevcut OEE seviyeniz dünya standartlarının (%85 OEE) gerisindedir. Bu durum cironuzun yaklaşık %10'unun (COPQ) masada kalmasına neden olmaktadır.
 
 **Kazanım Planı:**
 - **Hurda & Fire Azaltımı:** Poka-Yoke ve Standart İş Talimatları ile kalite hataları %30-40 azaltılır.
@@ -378,10 +393,8 @@ Mevcut OEE seviyeniz (%58) dünya standartlarının (%85 OEE) gerisindedir. Bu d
 Tesisinizdeki **${userMsg ? `"${userMsg}"` : 'operasyonel kayıplar'}** konusu, C-Level yönetim toplantısında şu 3 temel finansal argüman ile sunulmalıdır:
 
 1. **Finansal Büyüklük:** Tespit edilen kayıp havuzu yıllık cironuzun %10'u seviyesindedir. Amacımız bunun ilk fazda geri kazanılabilecek bölümünü kâra dönüştürmektir.
-2. **Hızlı Geri Dönüş (ROI):** 104 adam-günlük yatırımımız ortalama 3 ay içinde kendi maliyetini karşılamaktadır.
-3. **Kalıcı Kültür:** Dışarıdan danışmanlık almak yerine, şirketinizin kendi Kaizen liderlerini yetiştiriyoruz.
-
-*Gelin 2 günlük saha doğrulaması (Gemba Loss Assessment) ile 30-60-90 günlük ilk hızlı geri kazanım planını birlikte başlatalım.*`;
+2. **Yatırım Amortismanı:** Proje maliyeti ortalama 2-4 ay içinde amorti edilir.
+3. **Sürdürülebilir Yetkinlik:** Ekibiniz kendi Kaizen projelerini yürütecek seviyeye taşınır.`;
   }
 
   // Serve static files / Vite middleware
