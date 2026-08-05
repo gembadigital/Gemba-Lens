@@ -3591,9 +3591,9 @@ AÇIKLAMALAR & SÖZLEŞME NOTLARI:
                   </div>
                   <p className="text-xs text-slate-600 leading-relaxed font-semibold">
                     Seçilen <strong className="text-slate-900">{sectorCostStr.title}</strong> sektörel kırılımı benchmark parametrelerine dayanarak, {useProductFamilyCost ? (
-                      <>en çok koşan ürün ailesi olan <strong className="text-slate-900">{urunGrubuEnCok}</strong> grubuna ait ciro payı (yıllık <strong className="text-slate-900">₺{Math.round(productFamilyTurnover).toLocaleString('tr-TR')}</strong> - %{urunGrubuOranNum})</>
+                      <>en çok koşan ürün ailesi olan <strong className="text-slate-900">{urunGrubuEnCok}</strong> grubuna ait ciro payı (yıllık <strong className="text-slate-900">{currencySymbol}{Math.round(productFamilyTurnover).toLocaleString('tr-TR')} {currency}</strong> - %{urunGrubuOranNum})</>
                     ) : (
-                      <>yıllık <strong className="text-slate-900">₺{turnoverNum.toLocaleString('tr-TR')}</strong> toplam ciro girdiniz</>
+                      <>yıllık <strong className="text-slate-900">{currencySymbol}{turnoverNum.toLocaleString('tr-TR')} {currency}</strong> toplam ciro girdiniz</>
                     )} üzerinden tesise ait tipik maliyet yapısı kırılımı ve tahmini parasal karşılıkları aşağıda verilmiştir. Oranları firmanızın gerçek bütçe dağılımına göre dilediğiniz gibi düzenleyebilirsiniz:
                   </p>
                   
@@ -3614,7 +3614,7 @@ AÇIKLAMALAR & SÖZLEŞME NOTLARI:
                               <tr className="bg-slate-50 border-b border-slate-200">
                                 <th className="p-3 font-extrabold text-slate-700">Maliyet Kalemi</th>
                                 <th className="p-3 font-extrabold text-slate-700 text-center">Oran (%)</th>
-                                <th className="p-3 font-extrabold text-slate-700 text-right">Parasal Karşılık (TL)</th>
+                                <th className="p-3 font-extrabold text-slate-700 text-right">Parasal Karşılık ({currency})</th>
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 text-slate-800 font-medium">
@@ -3634,7 +3634,12 @@ AÇIKLAMALAR & SÖZLEŞME NOTLARI:
                                     />
                                   </div>
                                 </td>
-                                <td className="p-3 text-right text-slate-700 hover:text-slate-900 font-black">₺{Math.round(m_base).toLocaleString('tr-TR')}</td>
+                                <td className="p-3 text-right text-slate-700 hover:text-slate-900 font-black">
+                                  {currencySymbol}{Math.round(m_base).toLocaleString('tr-TR')}
+                                  {currency !== 'TRY' && (
+                                    <span className="block text-[10px] text-slate-500 font-mono">~₺{Math.round(m_base * activeRate).toLocaleString('tr-TR')} TL</span>
+                                  )}
+                                </td>
                               </tr>
                               <tr>
                                 <td className="p-3 text-slate-900 font-bold">
@@ -3657,7 +3662,12 @@ AÇIKLAMALAR & SÖZLEŞME NOTLARI:
                                     />
                                   </div>
                                 </td>
-                                <td className="p-3 text-right text-slate-700 hover:text-slate-900 font-black">₺{Math.round(i_base).toLocaleString('tr-TR')}</td>
+                                <td className="p-3 text-right text-slate-700 hover:text-slate-900 font-black">
+                                  {currencySymbol}{Math.round(i_base).toLocaleString('tr-TR')}
+                                  {currency !== 'TRY' && (
+                                    <span className="block text-[10px] text-slate-500 font-mono">~₺{Math.round(i_base * activeRate).toLocaleString('tr-TR')} TL</span>
+                                  )}
+                                </td>
                               </tr>
                               <tr>
                                 <td className="p-3 text-slate-900 font-bold">Enerji Giderleri</td>
@@ -3675,7 +3685,12 @@ AÇIKLAMALAR & SÖZLEŞME NOTLARI:
                                     />
                                   </div>
                                 </td>
-                                <td className="p-3 text-right text-slate-700 hover:text-slate-900 font-black">₺{Math.round(e_base).toLocaleString('tr-TR')}</td>
+                                <td className="p-3 text-right text-slate-700 hover:text-slate-900 font-black">
+                                  {currencySymbol}{Math.round(e_base).toLocaleString('tr-TR')}
+                                  {currency !== 'TRY' && (
+                                    <span className="block text-[10px] text-slate-500 font-mono">~₺{Math.round(e_base * activeRate).toLocaleString('tr-TR')} TL</span>
+                                  )}
+                                </td>
                               </tr>
                               <tr>
                                 <td className="p-3 text-slate-900 font-bold">Bakım Giderleri</td>
@@ -3693,7 +3708,12 @@ AÇIKLAMALAR & SÖZLEŞME NOTLARI:
                                     />
                                   </div>
                                 </td>
-                                <td className="p-3 text-right text-slate-700 hover:text-slate-900 font-black">₺{Math.round(b_base).toLocaleString('tr-TR')}</td>
+                                <td className="p-3 text-right text-slate-700 hover:text-slate-900 font-black">
+                                  {currencySymbol}{Math.round(b_base).toLocaleString('tr-TR')}
+                                  {currency !== 'TRY' && (
+                                    <span className="block text-[10px] text-slate-500 font-mono">~₺{Math.round(b_base * activeRate).toLocaleString('tr-TR')} TL</span>
+                                  )}
+                                </td>
                               </tr>
                               <tr>
                                 <td className="p-3 text-slate-900 font-bold">Genel Üretim Giderleri (Overhead)</td>
@@ -3711,7 +3731,12 @@ AÇIKLAMALAR & SÖZLEŞME NOTLARI:
                                     />
                                   </div>
                                 </td>
-                                <td className="p-3 text-right text-slate-700 hover:text-slate-900 font-black">₺{Math.round(g_base).toLocaleString('tr-TR')}</td>
+                                <td className="p-3 text-right text-slate-700 hover:text-slate-900 font-black">
+                                  {currencySymbol}{Math.round(g_base).toLocaleString('tr-TR')}
+                                  {currency !== 'TRY' && (
+                                    <span className="block text-[10px] text-slate-500 font-mono">~₺{Math.round(g_base * activeRate).toLocaleString('tr-TR')} TL</span>
+                                  )}
+                                </td>
                               </tr>
                               <tr className="bg-emerald-50/40 text-emerald-950 font-bold">
                                 <td className="p-3">Faaliyet Karı (Tahmini)</td>
@@ -3729,7 +3754,12 @@ AÇIKLAMALAR & SÖZLEŞME NOTLARI:
                                     />
                                   </div>
                                 </td>
-                                <td className="p-3 text-right text-emerald-900 font-black">₺{Math.round(operatingProfitVal).toLocaleString('tr-TR')}</td>
+                                <td className="p-3 text-right text-emerald-900 font-black">
+                                  {currencySymbol}{Math.round(operatingProfitVal).toLocaleString('tr-TR')}
+                                  {currency !== 'TRY' && (
+                                    <span className="block text-[10px] text-emerald-700 font-mono">~₺{Math.round(operatingProfitVal * activeRate).toLocaleString('tr-TR')} TL</span>
+                                  )}
+                                </td>
                               </tr>
                               <tr className="bg-slate-50 font-black text-slate-950 border-t border-slate-200">
                                 <td className="p-3">TOPLAM MAHSUL DEĞERİ (CİRO)</td>
@@ -3738,7 +3768,12 @@ AÇIKLAMALAR & SÖZLEŞME NOTLARI:
                                     %{totalSum}
                                   </span>
                                 </td>
-                                <td className="p-3 text-right">₺{turnoverNum.toLocaleString('tr-TR')}</td>
+                                <td className="p-3 text-right">
+                                  {currencySymbol}{turnoverNum.toLocaleString('tr-TR')}
+                                  {currency !== 'TRY' && (
+                                    <span className="block text-[10px] text-slate-500 font-mono font-bold">~₺{Math.round(turnoverNum * activeRate).toLocaleString('tr-TR')} TL (Kur)</span>
+                                  )}
+                                </td>
                               </tr>
                             </tbody>
                           </table>
@@ -3760,7 +3795,16 @@ AÇIKLAMALAR & SÖZLEŞME NOTLARI:
                     </p>
                     <div className="flex justify-between items-center bg-white p-3 rounded-xl border border-rose-150 shadow-sm">
                       <span className="font-extrabold text-rose-900 uppercase tracking-wider">TOPLAM YILLIK KAYIP HAVUZU:</span>
-                      <strong className="text-sm font-black text-rose-700">₺{Math.round(totalCopqPool).toLocaleString('tr-TR')} / yıl</strong>
+                      <div className="flex flex-col text-right">
+                        <strong className="text-sm sm:text-base font-black text-rose-700">
+                          {currencySymbol}{Math.round(totalCopqPool).toLocaleString('tr-TR')} {currency} / yıl
+                        </strong>
+                        {currency !== 'TRY' && (
+                          <span className="text-[10.5px] font-mono font-bold text-rose-900">
+                            (~₺{Math.round(totalCopqPool * activeRate).toLocaleString('tr-TR')} TL / yıl)
+                          </span>
+                        )}
+                      </div>
                     </div>
                     <p className="text-[11px] text-slate-500 italic mt-1 font-medium">
                       * Bu kayıp havuzu, direkt malzeme firelerini, düzeltme/rework işçiliklerini, fazla mesai yüklerini ve duruş kaynaklı kapasite kayıplarını içerir. Detaylı analizler ve grafikler ROI modülünde sunulmuştur.
@@ -3867,8 +3911,13 @@ AÇIKLAMALAR & SÖZLEŞME NOTLARI:
                         <span className="text-[10px] text-slate-400 font-bold block uppercase">Min Potansiyel (Asgari Çeviklik):</span>
                         <div className="flex flex-col">
                           <strong className="text-xl sm:text-2xl font-black text-slate-200">
-                            ₺{Math.round(total_economic_min).toLocaleString('tr-TR')}
+                            {currencySymbol}{Math.round(total_economic_min).toLocaleString('tr-TR')} {currency}
                           </strong>
+                          {currency !== 'TRY' && (
+                            <span className="text-xs font-mono font-bold text-emerald-300">
+                              ~₺{Math.round(total_economic_min * activeRate).toLocaleString('tr-TR')} TL
+                            </span>
+                          )}
                           <span className="text-[10px] text-red-400 font-black mt-0.5 uppercase tracking-wider">
                             Maliyet Azaltma Oranı: %{minEconomicLossPct}
                           </span>
@@ -3881,8 +3930,13 @@ AÇIKLAMALAR & SÖZLEŞME NOTLARI:
                         <span className="text-[10px] text-emerald-400 font-bold block uppercase">Max Potansiyel (Tam İsrafsızlık):</span>
                         <div className="flex flex-col">
                           <strong className="text-xl sm:text-3xl font-black text-emerald-400">
-                            ₺{Math.round(total_economic_max).toLocaleString('tr-TR')}
+                            {currencySymbol}{Math.round(total_economic_max).toLocaleString('tr-TR')} {currency}
                           </strong>
+                          {currency !== 'TRY' && (
+                            <span className="text-xs font-mono font-bold text-emerald-300">
+                              ~₺{Math.round(total_economic_max * activeRate).toLocaleString('tr-TR')} TL (Kur)
+                            </span>
+                          )}
                           <span className="text-[10px] text-emerald-400 font-black mt-0.5 uppercase tracking-wider">
                             Maliyet Azaltma Oranı: %{maxEconomicLossPct}
                           </span>
