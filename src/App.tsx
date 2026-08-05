@@ -13,6 +13,7 @@ import {
   Copy, 
   Briefcase, 
   RefreshCw, 
+  Save,
   ArrowRight,
   ArrowLeft,
   TrendingDown,
@@ -356,6 +357,9 @@ export default function App() {
     setTarih(details.company.visitDate);
     
     if (details.operation) {
+      if (details.operation.currency) {
+        setCurrency(details.operation.currency);
+      }
       setUrunGrubu(details.operation.urunGrubu || details.company.sector);
       setCalisanSayisi(details.operation.calisanSayisi || '150');
       setVardiya(details.operation.vardiya || '3 Vardiya (24 Saat)');
@@ -1524,12 +1528,17 @@ Eğer belirtilen sektöre özel yeterli ve doğrulanabilir bilgiye sahip değils
     }
   };
 
-  // ─── RELATIONAL DATABASE AUTOSAVE HOOK ───────────────────────────────────
-  useEffect(() => {
+  const [saveToast, setSaveToast] = useState<string | null>(null);
+
+  // ─── RELATIONAL DATABASE AUTOSAVE & MANUAL SAVE HOOK ─────────────────────
+  const performSave = async () => {
     if (!currentCompanyId) return;
 
+    const activeRate = currency === 'EUR' ? (eurTry || 37.65) : currency === 'USD' ? (usdTry || 34.80) : 1;
+    const potentialSavingTL = Math.round((total_economic_max || 0) * activeRate);
+
     // Save relational state to GembaDB
-    GembaDB.saveFullState(
+    await GembaDB.saveFullState(
       currentCompanyId,
       {
         companyName: firmaAdi,
@@ -1539,6 +1548,12 @@ Eğer belirtilen sektöre özel yeterli ve doğrulanabilir bilgiye sahip değils
         visitDate: tarih,
       },
       {
+        currency,
+        urunGrubu,
+        calisanSayisi,
+        vardiya,
+        gorusulen,
+        talepEdilenHizmet,
         setupMachineCount,
         annualVolume,
         productionUnit,
@@ -1575,22 +1590,22 @@ Eğer belirtilen sektöre özel yeterli ve doğrulanabilir bilgiye sahip değils
       },
       {
         overallScore: totalScore,
-        potentialSaving: total_economic_max || 0,
+        potentialSaving: potentialSavingTL,
         investmentNeed: Number(totalOp1Lira) || 0,
         paybackPeriod: 3,
         notes: notlar,
       }
     );
 
-    // Save calculated savings list dynamically
+    // Save calculated savings list dynamically (converted to TL for reporting)
     const savingsList = [
       {
         savingId: 's1-' + currentCompanyId,
         companyId: currentCompanyId,
         savingType: 'SMED / Kurulum Zamanı Tasarrufu',
-        currentCost: Math.round(setupLaborLoss || 0),
-        futureCost: Math.round((setupLaborLoss || 0) * 0.4),
-        annualSaving: Math.round((setupLaborLoss || 0) * 0.6),
+        currentCost: Math.round((setupLaborLoss || 0) * activeRate),
+        futureCost: Math.round(((setupLaborLoss || 0) * 0.4) * activeRate),
+        annualSaving: Math.round(((setupLaborLoss || 0) * 0.6) * activeRate),
         roi: 6.5,
         payback: 2,
         co2Reduction: 8,
@@ -1600,9 +1615,9 @@ Eğer belirtilen sektöre özel yeterli ve doğrulanabilir bilgiye sahip değils
         savingId: 's2-' + currentCompanyId,
         companyId: currentCompanyId,
         savingType: 'Operasyonel Verimsizlik Tasarrufu',
-        currentCost: Math.round(inefficiencyLaborLoss || 0),
-        futureCost: Math.round((inefficiencyLaborLoss || 0) * 0.58),
-        annualSaving: Math.round((inefficiencyLaborLoss || 0) * 0.42),
+        currentCost: Math.round((inefficiencyLaborLoss || 0) * activeRate),
+        futureCost: Math.round(((inefficiencyLaborLoss || 0) * 0.58) * activeRate),
+        annualSaving: Math.round(((inefficiencyLaborLoss || 0) * 0.42) * activeRate),
         roi: 5.2,
         payback: 3,
         co2Reduction: 11,
@@ -1612,9 +1627,9 @@ Eğer belirtilen sektöre özel yeterli ve doğrulanabilir bilgiye sahip değils
         savingId: 's3-' + currentCompanyId,
         companyId: currentCompanyId,
         savingType: 'Toplam Ekonomik Fırsat Potansiyeli',
-        currentCost: Math.round(totalLossExpected || 0),
-        futureCost: Math.round((totalLossExpected || 0) - (total_economic_max || 0)),
-        annualSaving: Math.round(total_economic_max || 0),
+        currentCost: Math.round((totalLossExpected || 0) * activeRate),
+        futureCost: Math.round(((totalLossExpected || 0) - (total_economic_max || 0)) * activeRate),
+        annualSaving: potentialSavingTL,
         roi: 8.2,
         payback: 1,
         co2Reduction: 15,
@@ -1622,14 +1637,23 @@ Eğer belirtilen sektöre özel yeterli ve doğrulanabilir bilgiye sahip değils
       }
     ];
     GembaDB.saveSavings(currentCompanyId, savingsList);
+  };
 
+  const handleManualSave = async () => {
+    await performSave();
+    setSaveToast('✅ Tüm Finansal Veriler ve Kayıp Analizi Buluta Kaydedildi!');
+    setTimeout(() => setSaveToast(null), 3500);
+  };
+
+  useEffect(() => {
+    performSave();
   }, [
     currentCompanyId, firmaAdi, sektor, adres, urunGrubu, calisanSayisi, vardiya, gorusulen, tarih, talepEdilenHizmet, notlar,
     activeTab, currency, setupMachineCount, annualVolume, productionUnit, turnoverLira, plannedEfficiency, actualEfficiency, copqRate, scrapRate, reworkRate, overtimeRate, leadTime, oee,
     coveredArea, operatorsCount, setupFrequency, setupDuration, affectedOpsSetup, grossLaborCost,
     wizardGrossSalary, wizardSgkRate, wizardYemek, wizardServis, wizardSeveranceRate, wizardLeaveRate, wizardSideBenefits,
     costPropMaterial, costPropLabor, costPropEnergy, costPropMaintenance, costPropOverhead, costPropProfit,
-    consultant, scores, chatMessages, totalScore, total_economic_max, totalOp1Lira, setupLaborLoss, inefficiencyLaborLoss, totalLossExpected
+    consultant, scores, chatMessages, totalScore, total_economic_max, totalOp1Lira, setupLaborLoss, inefficiencyLaborLoss, totalLossExpected, eurTry, usdTry
   ]);
 
   const copyToClipboard = () => {
@@ -1890,6 +1914,16 @@ AÇIKLAMALAR & SÖZLEŞME NOTLARI:
               </div>
               
               <button 
+                onClick={handleManualSave} 
+                className="bg-emerald-600 hover:bg-emerald-700 text-white border-none px-4 py-2 rounded-xl text-xs font-black flex items-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer shadow-md border border-emerald-500/50"
+                title="Tüm operasyonel verileri ve hesaplanan finansal kayıp matrisini buluta kaydeder."
+              >
+                <Save className="w-4 h-4 text-emerald-100" />
+                <span className="hidden sm:inline">BULUTA KAYDET</span>
+                <span className="sm:hidden">Kaydet</span>
+              </button>
+
+              <button 
                 onClick={runDemoFill} 
                 className="bg-slate-900 hover:bg-slate-800 text-white border-none px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer shadow-sm"
                 title="Sistem özelliklerini denemek için örnek otomotiv fabrikası verilerini yükler."
@@ -1924,6 +1958,14 @@ AÇIKLAMALAR & SÖZLEŞME NOTLARI:
           </div>
         </div>
       </nav>
+
+      {/* Toast Notification Banner */}
+      {saveToast && (
+        <div className="fixed top-24 right-5 bg-emerald-600 text-white px-5 py-3.5 rounded-2xl shadow-2xl font-black text-xs z-[999999] flex items-center gap-2.5 animate-bounce border border-emerald-400">
+          <CheckCircle2 className="w-5 h-5 text-white shrink-0" />
+          <span>{saveToast}</span>
+        </div>
+      )}
 
       {/* ─── STANDALONE MASTERFUL PRINT HEADER (PRINT-ONLY) ─── */}
       <div className="hidden print:block bg-white p-6 border-b-4 border-red-700 mb-8 font-sans">

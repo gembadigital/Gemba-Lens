@@ -1725,16 +1725,16 @@ export const RoiAnalyzer: React.FC<RoiAnalyzerProps> = ({
                   )}
                 </div>
                 <div>
-                  <span className="text-[9px] font-mono font-bold text-emerald-600 block uppercase tracking-widest mb-1">YILLIK GERİ KAZANIM ORANI ({currency})</span>
-                  <strong className="text-[18px] text-emerald-600 font-bold tracking-tight font-sans font-mono">{currencySymbol}{op1_min.toLocaleString('tr-TR')} - {currencySymbol}{op1_max.toLocaleString('tr-TR')}</strong>
+                  <span className="text-[9px] font-mono font-bold text-emerald-600 block uppercase tracking-widest mb-1">YILLIK GERİ KAZANIM ORANI (TL)</span>
+                  <strong className="text-[18px] text-emerald-600 font-bold tracking-tight font-sans font-mono">₺{Math.round(op1_min * activeRate).toLocaleString('tr-TR')} - ₺{Math.round(op1_max * activeRate).toLocaleString('tr-TR')} TL / yıl</strong>
                   {currency !== 'TRY' && (
-                    <span className="block text-[10px] font-extrabold text-emerald-700 mt-1 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200/60 w-max font-mono">
-                      ₺ Karşılığı: ₺{Math.round(op1_min * activeRate).toLocaleString('tr-TR')} - ₺{Math.round(op1_max * activeRate).toLocaleString('tr-TR')} TL / yıl
+                    <span className="block text-[10.5px] font-extrabold text-slate-600 mt-1 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 w-max font-mono">
+                      Döviz Karşılığı: {currencySymbol}{op1_min.toLocaleString('tr-TR')} - {currencySymbol}{op1_max.toLocaleString('tr-TR')} {currency} / yıl
                     </span>
                   )}
                   {useProductFamilyRecovery && (
                     <span className="block text-[10.5px] font-extrabold text-sky-600 mt-1 bg-sky-50 px-2 py-0.5 rounded border border-sky-100/50 w-max">
-                      Ürün Grubu: {currencySymbol}{Math.round(op1_min * familyRatio).toLocaleString('tr-TR')} - {currencySymbol}{Math.round(op1_max * familyRatio).toLocaleString('tr-TR')}
+                      Ürün Grubu: ₺{Math.round(op1_min * familyRatio * activeRate).toLocaleString('tr-TR')} - ₺{Math.round(op1_max * familyRatio * activeRate).toLocaleString('tr-TR')} TL
                     </span>
                   )}
                 </div>
@@ -1818,16 +1818,16 @@ export const RoiAnalyzer: React.FC<RoiAnalyzerProps> = ({
                   )}
                 </div>
                 <div>
-                  <span className="text-[9px] font-mono font-bold text-emerald-600 block uppercase tracking-widest mb-1">YILLIK GERİ KAZANIM ORANI ({currency})</span>
-                  <strong className="text-[18px] text-emerald-600 font-bold tracking-tight font-sans font-mono">{currencySymbol}{op2_min.toLocaleString('tr-TR')} - {currencySymbol}{op2_max.toLocaleString('tr-TR')}</strong>
+                  <span className="text-[9px] font-mono font-bold text-emerald-600 block uppercase tracking-widest mb-1">YILLIK GERİ KAZANIM ORANI (TL)</span>
+                  <strong className="text-[18px] text-emerald-600 font-bold tracking-tight font-sans font-mono">₺{Math.round(op2_min * activeRate).toLocaleString('tr-TR')} - ₺{Math.round(op2_max * activeRate).toLocaleString('tr-TR')} TL / yıl</strong>
                   {currency !== 'TRY' && (
-                    <span className="block text-[10px] font-extrabold text-emerald-700 mt-1 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200/60 w-max font-mono">
-                      ₺ Karşılığı: ₺{Math.round(op2_min * activeRate).toLocaleString('tr-TR')} - ₺{Math.round(op2_max * activeRate).toLocaleString('tr-TR')} TL / yıl
+                    <span className="block text-[10.5px] font-extrabold text-slate-600 mt-1 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 w-max font-mono">
+                      Döviz Karşılığı: {currencySymbol}{op2_min.toLocaleString('tr-TR')} - {currencySymbol}{op2_max.toLocaleString('tr-TR')} {currency} / yıl
                     </span>
                   )}
                   {useProductFamilyRecovery && (
                     <span className="block text-[10.5px] font-extrabold text-sky-650 mt-1 bg-sky-50 px-2 py-0.5 rounded border border-sky-100/50 w-max">
-                      Ürün Grubu: {currencySymbol}{Math.round(op2_min * familyRatio).toLocaleString('tr-TR')} - {currencySymbol}{Math.round(op2_max * familyRatio).toLocaleString('tr-TR')}
+                      Ürün Grubu: ₺{Math.round(op2_min * familyRatio * activeRate).toLocaleString('tr-TR')} - ₺{Math.round(op2_max * familyRatio * activeRate).toLocaleString('tr-TR')} TL
                     </span>
                   )}
                 </div>
@@ -1916,11 +1916,11 @@ export const RoiAnalyzer: React.FC<RoiAnalyzerProps> = ({
                   )}
                 </div>
                 <div>
-                  <span className="text-[9px] font-mono font-bold text-emerald-600 block uppercase tracking-widest mb-1">YILLIK GERİ KAZANIM ORANI ({currency})</span>
-                  <strong className="text-[18px] text-emerald-600 font-bold tracking-tight font-sans font-mono">{currencySymbol}{op3_min.toLocaleString('tr-TR')} - {currencySymbol}{op3_max.toLocaleString('tr-TR')}</strong>
+                  <span className="text-[9px] font-mono font-bold text-emerald-600 block uppercase tracking-widest mb-1">YILLIK GERİ KAZANIM ORANI (TL)</span>
+                  <strong className="text-[18px] text-emerald-600 font-bold tracking-tight font-sans font-mono">₺{Math.round(op3_min * activeRate).toLocaleString('tr-TR')} - ₺{Math.round(op3_max * activeRate).toLocaleString('tr-TR')} TL / yıl</strong>
                   {currency !== 'TRY' && (
-                    <span className="block text-[10px] font-extrabold text-emerald-700 mt-1 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200/60 w-max font-mono">
-                      ₺ Karşılığı: ₺{Math.round(op3_min * activeRate).toLocaleString('tr-TR')} - ₺{Math.round(op3_max * activeRate).toLocaleString('tr-TR')} TL / yıl
+                    <span className="block text-[10.5px] font-extrabold text-slate-600 mt-1 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 w-max font-mono">
+                      Döviz Karşılığı: {currencySymbol}{op3_min.toLocaleString('tr-TR')} - {currencySymbol}{op3_max.toLocaleString('tr-TR')} {currency} / yıl
                     </span>
                   )}
                 </div>
@@ -1999,11 +1999,11 @@ export const RoiAnalyzer: React.FC<RoiAnalyzerProps> = ({
                   )}
                 </div>
                 <div>
-                  <span className="text-[9px] font-mono font-bold text-emerald-600 block uppercase tracking-widest mb-1">YILLIK GERİ KAZANIM ORANI ({currency})</span>
-                  <strong className="text-[18px] text-emerald-600 font-bold tracking-tight font-sans font-mono">{currencySymbol}{op4_min.toLocaleString('tr-TR')} - {currencySymbol}{op4_max.toLocaleString('tr-TR')}</strong>
+                  <span className="text-[9px] font-mono font-bold text-emerald-600 block uppercase tracking-widest mb-1">YILLIK GERİ KAZANIM ORANI (TL)</span>
+                  <strong className="text-[18px] text-emerald-600 font-bold tracking-tight font-sans font-mono">₺{Math.round(op4_min * activeRate).toLocaleString('tr-TR')} - ₺{Math.round(op4_max * activeRate).toLocaleString('tr-TR')} TL / yıl</strong>
                   {currency !== 'TRY' && (
-                    <span className="block text-[10px] font-extrabold text-emerald-700 mt-1 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200/60 w-max font-mono">
-                      ₺ Karşılığı: ₺{Math.round(op4_min * activeRate).toLocaleString('tr-TR')} - ₺{Math.round(op4_max * activeRate).toLocaleString('tr-TR')} TL / yıl
+                    <span className="block text-[10.5px] font-extrabold text-slate-600 mt-1 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 w-max font-mono">
+                      Döviz Karşılığı: {currencySymbol}{op4_min.toLocaleString('tr-TR')} - {currencySymbol}{op4_max.toLocaleString('tr-TR')} {currency} / yıl
                     </span>
                   )}
                 </div>
