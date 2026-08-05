@@ -327,25 +327,27 @@ export const GembaDB = {
   },
 
   // ─── BI-DIRECTIONAL CLOUD SYNC METHODS FOR TABLET & PC ───
+  // ─── BI-DIRECTIONAL CLOUD SYNC METHODS FOR TABLET & PC ───
   async syncCompaniesFromCloud(): Promise<Company[]> {
     seedInitialDatabase();
     const client = getSupabase();
     if (!client) return this.getCompanies(true);
 
     try {
-      const { data, error } = await client
+      // 1. Fetch Companies
+      const { data: cloudCompData, error: compErr } = await client
         .from('companies')
         .select('*')
         .order('updated_at', { ascending: false });
 
-      if (error) {
-        console.warn('[Supabase Cloud Sync Error]', error.message);
+      if (compErr) {
+        console.warn('[Supabase Cloud Sync Error]', compErr.message);
         return this.getCompanies(true);
       }
 
-      if (data && Array.isArray(data) && data.length > 0) {
+      if (cloudCompData && Array.isArray(cloudCompData) && cloudCompData.length > 0) {
         const localCompanies = this.getCompanies(true);
-        const cloudCompanies: Company[] = data.map((row: any) => ({
+        const cloudCompanies: Company[] = cloudCompData.map((row: any) => ({
           companyId: row.company_id,
           companyName: row.company_name,
           sector: row.sector || 'Genel İmalat',
@@ -363,6 +365,61 @@ export const GembaDB = {
 
         const mergedList = Array.from(mergedMap.values());
         localStorage.setItem(KEYS.COMPANIES, JSON.stringify(mergedList));
+
+        // 2. Fetch All Operation Data (relational payload)
+        const { data: allOps } = await client.from('operation_data').select('*');
+        if (allOps && Array.isArray(allOps) && allOps.length > 0) {
+          const localOps: OperationData[] = JSON.parse(localStorage.getItem(KEYS.OPERATIONS) || '[]');
+          const opMap = new Map<string, OperationData>();
+          localOps.forEach(o => opMap.set(o.companyId, o));
+          allOps.forEach((row: any) => {
+            if (row.company_id && row.data_json) {
+              opMap.set(row.company_id, { ...row.data_json, companyId: row.company_id });
+            }
+          });
+          localStorage.setItem(KEYS.OPERATIONS, JSON.stringify(Array.from(opMap.values())));
+        }
+
+        // 3. Fetch All Assessments
+        const { data: allAssess } = await client.from('assessments').select('*');
+        if (allAssess && Array.isArray(allAssess) && allAssess.length > 0) {
+          const localAssess: Assessment[] = JSON.parse(localStorage.getItem(KEYS.ASSESSMENTS) || '[]');
+          const asMap = new Map<string, Assessment>();
+          localAssess.forEach(a => asMap.set(a.companyId, a));
+          allAssess.forEach((row: any) => {
+            if (row.company_id) {
+              asMap.set(row.company_id, {
+                assessmentId: row.assessment_id || generateUUID(),
+                companyId: row.company_id,
+                overallScore: row.overall_score || 0,
+                potentialSaving: row.potential_saving || 0,
+                investmentNeed: row.investment_need || 0,
+                paybackPeriod: row.payback_period || 0,
+                notes: row.notes || '',
+                createdDate: row.created_at || new Date().toISOString()
+              });
+            }
+          });
+          localStorage.setItem(KEYS.ASSESSMENTS, JSON.stringify(Array.from(asMap.values())));
+        }
+
+        // 4. Fetch All Observations
+        const { data: allObs } = await client.from('observations').select('*');
+        if (allObs && Array.isArray(allObs) && allObs.length > 0) {
+          const fetchedObs: Observation[] = allObs.map((row: any) => ({
+            observationId: row.observation_id,
+            companyId: row.company_id,
+            category: row.category || 'Genel',
+            finding: row.finding || '',
+            improvement: row.improvement || '',
+            priority: row.priority || 'Orta',
+            impact: row.impact || 'Orta',
+            photo: row.photo || undefined,
+            createdDate: row.created_at || new Date().toISOString()
+          }));
+          localStorage.setItem(KEYS.OBSERVATIONS, JSON.stringify(fetchedObs));
+        }
+
         return mergedList;
       }
     } catch (e) {
@@ -762,7 +819,7 @@ export const GembaDB = {
           operators_count: updatedOp.operatorsCount,
           data_json: updatedOp,
           created_at: now
-        }).then(({ error }) => {
+        }, { onConflict: 'company_id' }).then(({ error }) => {
           if (error) console.warn('[Supabase Sync FullState Operation Error]', error.message);
         });
 
@@ -776,7 +833,7 @@ export const GembaDB = {
           payback_period: updatedAs.paybackPeriod,
           notes: updatedAs.notes,
           created_at: updatedAs.createdDate
-        }).then(({ error }) => {
+        }, { onConflict: 'company_id' }).then(({ error }) => {
           if (error) console.warn('[Supabase Sync FullState Assessment Error]', error.message);
         });
       }

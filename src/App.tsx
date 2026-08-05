@@ -416,12 +416,19 @@ export default function App() {
     localStorage.setItem('gp_currentCompanyId', companyId);
   };
 
-  // Initialize company on mount
+  // Initialize company on mount with full cloud database sync
   useEffect(() => {
-    const savedId = localStorage.getItem('gp_currentCompanyId');
-    const comps = GembaDB.getCompanies(false);
-    const targetId = savedId || comps[0]?.companyId || 'demo-company-id-1234';
-    loadCompany(targetId);
+    const initApp = async () => {
+      try {
+        const syncedComps = await GembaDB.syncCompaniesFromCloud();
+        const savedId = localStorage.getItem('gp_currentCompanyId');
+        const targetId = savedId || syncedComps[0]?.companyId || 'demo-company-id-1234';
+        await loadCompany(targetId);
+      } catch (e) {
+        console.warn('[App Init Error]', e);
+      }
+    };
+    initApp();
   }, []);
 
   // Modern OpEx Industrial Financial Analysis variables
