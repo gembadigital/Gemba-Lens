@@ -337,19 +337,22 @@ export default function App() {
   const [talepEdilenHizmet, setTalepEdilenHizmet] = useState(() => localStorage.getItem('gp_talepEdilenHizmet') || 'Yalın Dönüşüm Proje Danışmanlığı');
   const [notlar, setNotlar] = useState(() => localStorage.getItem('gp_notlar') || '');
   
-  // Tab control state
-  const [activeTab, setActiveTab] = useState<'scoring' | 'financial' | 'roi'>(() => (localStorage.getItem('gp_activeTab') as 'scoring' | 'financial' | 'roi') || 'scoring');
+  const isSwappingCompany = useRef(false);
 
   // Load Company from database function with Cloud Sync
   const loadCompany = async (companyId: string) => {
+    isSwappingCompany.current = true;
     try {
       await GembaDB.syncCompanyDetailsFromCloud(companyId);
     } catch (e) {}
 
     const details = GembaDB.getCompanyDetails(companyId);
-    if (!details) return;
+    if (!details) {
+      isSwappingCompany.current = false;
+      return;
+    }
 
-    // Set states
+    setCurrentCompanyId(companyId);
     setFirmaAdi(details.company.companyName);
     setSektor(details.company.sector);
     setAdres(details.company.location || '');
@@ -418,6 +421,10 @@ export default function App() {
 
     setCurrentCompanyId(companyId);
     localStorage.setItem('gp_currentCompanyId', companyId);
+
+    setTimeout(() => {
+      isSwappingCompany.current = false;
+    }, 400);
   };
 
   // Initialize company on mount with full cloud database sync
@@ -1532,7 +1539,7 @@ Eğer belirtilen sektöre özel yeterli ve doğrulanabilir bilgiye sahip değils
 
   // ─── RELATIONAL DATABASE AUTOSAVE & MANUAL SAVE HOOK ─────────────────────
   const performSave = async () => {
-    if (!currentCompanyId) return;
+    if (!currentCompanyId || isSwappingCompany.current) return;
 
     const activeRate = currency === 'EUR' ? (eurTry || 37.65) : currency === 'USD' ? (usdTry || 34.80) : 1;
     const potentialSavingTL = Math.round((total_economic_max || 0) * activeRate);

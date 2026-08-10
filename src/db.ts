@@ -718,46 +718,49 @@ export const GembaDB = {
       // 2. OperationData
       const operations: OperationData[] = JSON.parse(localStorage.getItem(KEYS.OPERATIONS) || '[]');
       const oIdx = operations.findIndex(o => o.companyId === companyId);
+      const existingOp = oIdx > -1 ? operations[oIdx] : null;
+
       const updatedOp: OperationData = {
         companyId,
-        setupMachineCount: operationFields.setupMachineCount ?? '5',
-        annualVolume: operationFields.annualVolume ?? '500.000',
-        productionUnit: operationFields.productionUnit ?? 'Adet',
-        turnoverLira: operationFields.turnoverLira ?? '150.000.000',
-        plannedEfficiency: operationFields.plannedEfficiency ?? '85',
-        actualEfficiency: operationFields.actualEfficiency ?? '62',
-        copqRate: operationFields.copqRate ?? '4.5',
-        scrapRate: operationFields.scrapRate ?? '1.8',
-        reworkRate: operationFields.reworkRate ?? '2.7',
-        overtimeRate: operationFields.overtimeRate ?? '8.5',
-        leadTime: operationFields.leadTime ?? '12',
-        oee: operationFields.oee ?? '58',
-        coveredArea: operationFields.coveredArea ?? '4.500',
-        operatorsCount: operationFields.operatorsCount ?? '120',
-        setupFrequency: operationFields.setupFrequency ?? '5',
-        setupDuration: operationFields.setupDuration ?? '45',
-        affectedOpsSetup: operationFields.affectedOpsSetup ?? '3',
-        grossLaborCost: operationFields.grossLaborCost ?? '48.000',
-        wizardGrossSalary: operationFields.wizardGrossSalary ?? '30.000',
-        wizardSgkRate: operationFields.wizardSgkRate ?? 17.5,
-        wizardYemek: operationFields.wizardYemek ?? '4.500',
-        wizardServis: operationFields.wizardServis ?? '3.500',
-        wizardSeveranceRate: operationFields.wizardSeveranceRate ?? 8.33,
-        wizardLeaveRate: operationFields.wizardLeaveRate ?? 5.0,
-        wizardSideBenefits: operationFields.wizardSideBenefits ?? '2.000',
-        costPropMaterial: operationFields.costPropMaterial ?? '50',
-        costPropLabor: operationFields.costPropLabor ?? '20',
-        costPropEnergy: operationFields.costPropEnergy ?? '10',
-        costPropMaintenance: operationFields.costPropMaintenance ?? '10',
-        costPropOverhead: operationFields.costPropOverhead ?? '10',
-        costPropProfit: operationFields.costPropProfit ?? '10',
-        urunGrubu: operationFields.urunGrubu ?? (oIdx > -1 ? operations[oIdx].urunGrubu : ''),
-        calisanSayisi: operationFields.calisanSayisi ?? (oIdx > -1 ? operations[oIdx].calisanSayisi : ''),
-        vardiya: operationFields.vardiya ?? (oIdx > -1 ? operations[oIdx].vardiya : ''),
-        gorusulen: operationFields.gorusulen ?? (oIdx > -1 ? operations[oIdx].gorusulen : ''),
-        talepEdilenHizmet: operationFields.talepEdilenHizmet ?? (oIdx > -1 ? operations[oIdx].talepEdilenHizmet : 'Yalın Dönüşüm Proje Danışmanlığı'),
-        scores: operationFields.scores ?? (oIdx > -1 ? operations[oIdx].scores : {}),
-        chatMessages: operationFields.chatMessages ?? (oIdx > -1 ? operations[oIdx].chatMessages : [])
+        setupMachineCount: operationFields.setupMachineCount || existingOp?.setupMachineCount || '5',
+        annualVolume: operationFields.annualVolume || existingOp?.annualVolume || '500.000',
+        productionUnit: operationFields.productionUnit || existingOp?.productionUnit || 'Adet',
+        turnoverLira: operationFields.turnoverLira || existingOp?.turnoverLira || '150.000.000',
+        plannedEfficiency: operationFields.plannedEfficiency || existingOp?.plannedEfficiency || '85',
+        actualEfficiency: operationFields.actualEfficiency || existingOp?.actualEfficiency || '62',
+        copqRate: operationFields.copqRate || existingOp?.copqRate || '4.5',
+        scrapRate: operationFields.scrapRate || existingOp?.scrapRate || '1.8',
+        reworkRate: operationFields.reworkRate || existingOp?.reworkRate || '2.7',
+        overtimeRate: operationFields.overtimeRate || existingOp?.overtimeRate || '8.5',
+        leadTime: operationFields.leadTime || existingOp?.leadTime || '12',
+        oee: operationFields.oee || existingOp?.oee || '58',
+        coveredArea: operationFields.coveredArea || existingOp?.coveredArea || '4.500',
+        operatorsCount: operationFields.operatorsCount || existingOp?.operatorsCount || '120',
+        setupFrequency: operationFields.setupFrequency || existingOp?.setupFrequency || '5',
+        setupDuration: operationFields.setupDuration || existingOp?.setupDuration || '45',
+        affectedOpsSetup: operationFields.affectedOpsSetup || existingOp?.affectedOpsSetup || '3',
+        grossLaborCost: operationFields.grossLaborCost || existingOp?.grossLaborCost || '48.000',
+        wizardGrossSalary: operationFields.wizardGrossSalary || existingOp?.wizardGrossSalary || '30.000',
+        wizardSgkRate: operationFields.wizardSgkRate ?? existingOp?.wizardSgkRate ?? 17.5,
+        wizardYemek: operationFields.wizardYemek || existingOp?.wizardYemek || '4.500',
+        wizardServis: operationFields.wizardServis || existingOp?.wizardServis || '3.500',
+        wizardSeveranceRate: operationFields.wizardSeveranceRate ?? existingOp?.wizardSeveranceRate ?? 8.33,
+        wizardLeaveRate: operationFields.wizardLeaveRate ?? existingOp?.wizardLeaveRate ?? 5.0,
+        wizardSideBenefits: operationFields.wizardSideBenefits || existingOp?.wizardSideBenefits || '2.000',
+        costPropMaterial: operationFields.costPropMaterial || existingOp?.costPropMaterial || '50',
+        costPropLabor: operationFields.costPropLabor || existingOp?.costPropLabor || '20',
+        costPropEnergy: operationFields.costPropEnergy || existingOp?.costPropEnergy || '10',
+        costPropMaintenance: operationFields.costPropMaintenance || existingOp?.costPropMaintenance || '10',
+        costPropOverhead: operationFields.costPropOverhead || existingOp?.costPropOverhead || '10',
+        costPropProfit: operationFields.costPropProfit || existingOp?.costPropProfit || '10',
+        currency: operationFields.currency || existingOp?.currency || 'TRY',
+        urunGrubu: operationFields.urunGrubu || existingOp?.urunGrubu || '',
+        calisanSayisi: operationFields.calisanSayisi || existingOp?.calisanSayisi || '',
+        vardiya: operationFields.vardiya || existingOp?.vardiya || '',
+        gorusulen: operationFields.gorusulen || existingOp?.gorusulen || '',
+        talepEdilenHizmet: operationFields.talepEdilenHizmet || existingOp?.talepEdilenHizmet || 'Yalın Dönüşüm Proje Danışmanlığı',
+        scores: (operationFields.scores && Object.keys(operationFields.scores).length > 0) ? operationFields.scores : (existingOp?.scores || {}),
+        chatMessages: (operationFields.chatMessages && operationFields.chatMessages.length > 0) ? operationFields.chatMessages : (existingOp?.chatMessages || [])
       };
 
       if (oIdx > -1) {
@@ -770,14 +773,16 @@ export const GembaDB = {
       // 3. Assessment
       const assessments: Assessment[] = JSON.parse(localStorage.getItem(KEYS.ASSESSMENTS) || '[]');
       const aIdx = assessments.findIndex(a => a.companyId === companyId);
+      const existingAs = aIdx > -1 ? assessments[aIdx] : null;
+
       const updatedAs: Assessment = {
         assessmentId: aIdx > -1 ? assessments[aIdx].assessmentId : generateUUID(),
         companyId,
-        overallScore: assessmentFields.overallScore ?? 0,
-        potentialSaving: assessmentFields.potentialSaving ?? 0,
-        investmentNeed: assessmentFields.investmentNeed ?? 0,
-        paybackPeriod: assessmentFields.paybackPeriod ?? 0,
-        notes: assessmentFields.notes ?? '',
+        overallScore: assessmentFields.overallScore || existingAs?.overallScore || 0,
+        potentialSaving: assessmentFields.potentialSaving || existingAs?.potentialSaving || 0,
+        investmentNeed: assessmentFields.investmentNeed || existingAs?.investmentNeed || 0,
+        paybackPeriod: assessmentFields.paybackPeriod || existingAs?.paybackPeriod || 0,
+        notes: assessmentFields.notes ?? existingAs?.notes ?? '',
         createdDate: aIdx > -1 ? assessments[aIdx].createdDate : now
       };
 
@@ -801,7 +806,7 @@ export const GembaDB = {
           visit_date: companyFields.visitDate || (cIdx > -1 ? companies[cIdx].visitDate : now.split('T')[0]),
           status: companyFields.status || (cIdx > -1 ? companies[cIdx].status : 'Active'),
           updated_at: now
-        }).then(({ error }) => {
+        }, { onConflict: 'company_id' }).then(({ error }) => {
           if (error) console.warn('[Supabase Sync FullState Company Error]', error.message);
         });
 
