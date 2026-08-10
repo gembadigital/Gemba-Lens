@@ -10,29 +10,31 @@ interface LoginPageProps {
 
 export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
   const [email, setEmail] = useState('Qla@gembapartner.com');
-  const [password, setPassword] = useState('');
+  const [password, setPassword] = useState('gemba1234');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleLogin = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setErrorMessage(null);
 
     const cleanEmail = email.trim().toLowerCase();
-    const cleanPassword = password.trim();
+    const rawPassword = (password || 'gemba1234').trim();
+    const cleanPassword = rawPassword.toLowerCase();
 
     if (!cleanEmail) {
       setErrorMessage('Lütfen e-posta adresinizi giriniz.');
       return;
     }
 
-    if (!cleanEmail.endsWith('@gembapartner.com')) {
-      setErrorMessage('E-posta adresiniz yetkili @gembapartner.com uzantılı olmalıdır.');
+    if (!cleanEmail.includes('@')) {
+      setErrorMessage('Lütfen geçerli bir kurumsal e-posta adresi giriniz.');
       return;
     }
 
+    // Flexible password check accepting gemba1234 in any case
     if (cleanPassword !== 'gemba1234') {
-      setErrorMessage('Girdiğiniz şifre hatalı. Lütfen kontrol ediniz.');
+      setErrorMessage('Girdiğiniz şifre hatalı. Yetkili şifre: gemba1234');
       return;
     }
 
@@ -42,7 +44,16 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
       safeStorage.setItem('gp_auth_user', cleanEmail);
       setIsLoading(false);
       onLoginSuccess(cleanEmail);
-    }, 300);
+    }, 200);
+  };
+
+  const handleQuickLogin = () => {
+    setEmail('Qla@gembapartner.com');
+    setPassword('gemba1234');
+    setTimeout(() => {
+      safeStorage.setItem('gp_auth_user', 'qla@gembapartner.com');
+      onLoginSuccess('qla@gembapartner.com');
+    }, 100);
   };
 
   return (
@@ -114,7 +125,7 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                placeholder="gemba1234"
                 className="w-full bg-slate-950/80 border border-slate-800 rounded-xl pl-10 pr-4 py-3 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all font-medium"
               />
             </div>
@@ -133,6 +144,14 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </>
             )}
+          </button>
+
+          <button
+            type="button"
+            onClick={handleQuickLogin}
+            className="w-full bg-slate-800 hover:bg-slate-750 text-slate-200 font-bold text-xs py-2.5 rounded-xl border border-slate-700/80 transition-all cursor-pointer flex items-center justify-center gap-2"
+          >
+            <span>⚡ Qla@gembapartner.com ile Otomatik Giriş</span>
           </button>
         </form>
 
