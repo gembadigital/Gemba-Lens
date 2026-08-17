@@ -617,76 +617,6 @@ Eğer belirtilen sektöre özel yeterli ve doğrulanabilir bilgiye sahip değils
     localStorage.setItem('gp_hidePwaPrompt', 'true');
   };
 
-  // Persistence side effects
-  useEffect(() => {
-    // Save to relational database per company ID
-    if (currentCompanyId) {
-      GembaDB.saveFullState(
-        currentCompanyId,
-        {
-          companyName: firmaAdi,
-          sector: sektor,
-          location: adres,
-          consultant: consultant,
-          visitDate: tarih
-        },
-        {
-          urunGrubu,
-          calisanSayisi,
-          vardiya,
-          gorusulen,
-          talepEdilenHizmet,
-          setupMachineCount,
-          annualVolume,
-          productionUnit,
-          turnoverLira,
-          plannedEfficiency,
-          actualEfficiency,
-          copqRate,
-          scrapRate,
-          reworkRate,
-          overtimeRate,
-          leadTime,
-          oee,
-          coveredArea,
-          operatorsCount,
-          setupFrequency,
-          setupDuration,
-          affectedOpsSetup,
-          grossLaborCost,
-          wizardGrossSalary,
-          wizardSgkRate,
-          wizardYemek,
-          wizardServis,
-          wizardSeveranceRate,
-          wizardLeaveRate,
-          wizardSideBenefits,
-          costPropMaterial,
-          costPropLabor,
-          costPropEnergy,
-          costPropMaintenance,
-          costPropOverhead,
-          costPropProfit,
-          scores,
-          chatMessages
-        },
-        {
-          notes: notlar
-        }
-      );
-    }
-
-    localStorage.setItem('gp_activeTab', activeTab);
-    localStorage.setItem('gp_currency', currency);
-  }, [
-    currentCompanyId, firmaAdi, sektor, adres, urunGrubu, calisanSayisi, vardiya, gorusulen, tarih, talepEdilenHizmet, notlar, consultant,
-    activeTab, currency, setupMachineCount, annualVolume, productionUnit, turnoverLira, plannedEfficiency, actualEfficiency, copqRate, scrapRate, reworkRate, overtimeRate, leadTime, oee,
-    coveredArea, operatorsCount, setupFrequency, setupDuration, affectedOpsSetup, grossLaborCost,
-    wizardGrossSalary, wizardSgkRate, wizardYemek, wizardServis, wizardSeveranceRate, wizardLeaveRate, wizardSideBenefits,
-    costPropMaterial, costPropLabor, costPropEnergy, costPropMaintenance, costPropOverhead, costPropProfit,
-    scores, chatMessages
-  ]);
-
   // Dynamically reset wizard values on currency change to provide realistic local numbers
   useEffect(() => {
     if (currency === 'TRY') {
@@ -1644,6 +1574,8 @@ Eğer belirtilen sektöre özel yeterli ve doğrulanabilir bilgiye sahip değils
       }
     ];
     GembaDB.saveSavings(currentCompanyId, savingsList);
+    localStorage.setItem('gp_activeTab', activeTab);
+    localStorage.setItem('gp_currency', currency);
   };
 
   const handleManualSave = async () => {
