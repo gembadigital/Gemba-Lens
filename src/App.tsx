@@ -336,6 +336,7 @@ export default function App() {
   const [tarih, setTarih] = useState(() => localStorage.getItem('gp_tarih') || new Date().toISOString().split('T')[0]);
   const [talepEdilenHizmet, setTalepEdilenHizmet] = useState(() => localStorage.getItem('gp_talepEdilenHizmet') || 'Yalın Dönüşüm Proje Danışmanlığı');
   const [notlar, setNotlar] = useState(() => localStorage.getItem('gp_notlar') || '');
+  const [activeTab, setActiveTab] = useState<'scoring' | 'financial' | 'roi'>(() => (localStorage.getItem('gp_activeTab') as 'scoring' | 'financial' | 'roi') || 'scoring');
   
   const isSwappingCompany = useRef(false);
 
